@@ -25,11 +25,19 @@ No es necesario instalar Java, Node.js, npm, Android Studio ni Android SDK en la
 Desde la raíz del repositorio:
 
 ```bash
-cd ExpenseTracker/ExpenseTracker
+cd ExpenseTracker
 docker compose up --build
 ```
 
 La primera ejecución construye la imagen, instala las dependencias fijadas en `package-lock.json` y arranca Expo. Esperar a que la terminal muestre el QR y escanearlo desde **Expo Go > Scan QR Code** en Android. El servidor usa un túnel para que el teléfono pueda conectarse aunque Docker esté aislado de la red local.
+
+Si el túnel de ngrok no inicia y la computadora usa Linux, se puede usar la red local como alternativa. Conectar el teléfono y la computadora a la misma Wi-Fi y ejecutar desde esta carpeta:
+
+```bash
+docker compose -f compose.lan.yaml up --build
+```
+
+Este modo usa la red del host para que Expo anuncie una dirección LAN alcanzable por el teléfono. Docker host networking funciona en Linux; en macOS/Windows se requiere Docker Desktop 4.34 o posterior y host networking habilitado. Consultar la [documentación de Docker sobre host networking](https://docs.docker.com/engine/network/drivers/host/).
 
 Para detener el servidor, presionar `Ctrl+C` una vez. Los mensajes `SIGTERM`, `Gracefully Stopping` o `exited with code 1` que aparecen al detenerlo de esta forma son el cierre normal del contenedor; no significan por sí solos que la app haya fallado. Para volver a iniciarlo:
 
@@ -62,11 +70,19 @@ Expo está interpretando `ngrok` como una ruta de proyecto. El comando del Docke
 
 Comprobar que se está usando SDK 57 y el comando `--tunnel` del Dockerfile. El texto con la opción `--tunnel ngrok` corresponde a la CLI de SDK 58; en SDK 57 puede tratar `ngrok` como una carpeta. Si el túnel falla por conectividad, revisar Internet, proxy o firewall y reiniciar con `docker compose up --build`.
 
+### `failed to start tunnel` o `remote gone away`
+
+El servidor de Metro puede iniciar aunque ngrok no consiga establecer el túnel. Revisar la [página de estado de ngrok](https://status.ngrok.com/) y la conexión a Internet. Si Docker tiene Internet pero el túnel sigue fallando, en Linux usar el modo LAN con `docker compose -f compose.lan.yaml up --build`; el teléfono debe estar en la misma Wi-Fi que la computadora. La advertencia de que Expo no pudo descargar la versión más reciente de React Native DevTools es secundaria y por sí sola no detiene Metro.
+
+### `Failed to download remote update` en Expo Go
+
+En modo LAN, comprobar que el celular y la computadora estén en la misma Wi-Fi y que la URL del QR use la IP LAN de la computadora. Desde el navegador del celular abrir `http://<IP_DE_LA_NOTEBOOK>:8081/status`; debe responder `packager-status:running`. Si no responde, revisar VPN, aislamiento de clientes de la red Wi-Fi y firewall; en Linux con UFW activo, permitir el puerto TCP 8081. Cerrar Expo Go por completo, escanear el QR nuevo y volver a probar. El aviso de React Native DevTools sobre usar una versión de respaldo no suele causar este error.
+
 ### No aparece el QR
 
 - Revisar si Expo terminó con un error; el QR no aparece si el contenedor sale antes de iniciar el servidor.
 - Verificar que Docker esté en ejecución y que el contenedor siga activo.
-- Ejecutar `docker compose up --build` desde `ExpenseTracker/ExpenseTracker`.
+- Ejecutar `docker compose up --build` desde `ExpenseTracker`.
 - Si el error es de dependencias incompatibles después de cambiar de SDK, regenerar el volumen con `docker compose down -v` y reconstruir.
 
 ### `npm error ... signal SIGTERM` al presionar `Ctrl+C`
@@ -75,9 +91,10 @@ Docker envía `SIGTERM` para cerrar Expo y npm registra que el proceso fue inter
 
 ## Estructura relevante
 
-- `ExpenseTracker/ExpenseTracker/Dockerfile`: imagen Node y comando de Expo.
-- `ExpenseTracker/ExpenseTracker/compose.yaml`: servicio, puerto y volúmenes de desarrollo.
-- `ExpenseTracker/ExpenseTracker/package.json` y `package-lock.json`: dependencias y versiones reproducibles.
+- `ExpenseTracker/Dockerfile`: imagen Node y comando de Expo.
+- `ExpenseTracker/compose.yaml`: servicio, puerto y volúmenes de desarrollo.
+- `ExpenseTracker/compose.lan.yaml`: alternativa de red LAN para Linux cuando el túnel falla.
+- `ExpenseTracker/package.json` y `package-lock.json`: dependencias y versiones reproducibles.
 
 ## Referencias
 
