@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, SafeAreaView, Platform, StatusBar as RNStatusBar } from 'react-native';
+import WelcomeScreen from './screens/WelcomeScreen';
 
 const EXPENSES = [
   { id: '1', description: 'Supermercado', amount: '$25000' },
@@ -8,6 +10,9 @@ const EXPENSES = [
 ];
 
 export default function App() {
+  // Estado simple para controlar la navegación entre pantallas (US #3)
+  const [currentScreen, setCurrentScreen] = useState('welcome');
+
   const renderItem = ({ item }) => (
     <View style={styles.itemCard}>
       <Text style={styles.description}>{item.description}</Text>
@@ -17,16 +22,21 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Listado de Gastos</Text>
-        <FlatList
-          data={EXPENSES}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContainer}
-        />
-        <StatusBar style="dark" />
-      </View>
+      <StatusBar style="dark" />
+      {currentScreen === 'welcome' ? (
+        <WelcomeScreen onNavigateToExpenses={() => setCurrentScreen('expenses')} />
+      ) : (
+        <View style={styles.container}>
+          <Text style={styles.title}>Listado de Gastos</Text>
+          <FlatList
+            data={EXPENSES}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContainer}
+          />
+          <StatusBar style="dark" />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
