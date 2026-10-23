@@ -10,6 +10,8 @@ services:
       - expo_node_modules:/app/node_modules
     environment:
       - EXPO_TELEMETRY_DISABLED=1
+      - REACT_NATIVE_PACKAGER_HOSTNAME=${EXPO_PACKAGER_HOSTNAME:?Set EXPO_PACKAGER_HOSTNAME in .env}
+    command: ["sh", "-c", "npm ci && npx expo start --lan --port 8081"]
     stdin_open: true
     tty: true
 
