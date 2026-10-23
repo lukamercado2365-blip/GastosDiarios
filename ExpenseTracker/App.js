@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, SafeAreaView, Platform, StatusBar as RNStatusBar } from 'react-native';
+import { FlatList, Platform, SafeAreaView, StatusBar as RNStatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import WelcomeScreen from './src/Screens/WelcomeScreen';
+import ExpenseFormScreen from './src/Screens/ExpenseFormScreen';
 
 const EXPENSES = [
   { id: '1', description: 'Supermercado', amount: '$25000' },
@@ -10,7 +11,6 @@ const EXPENSES = [
 ];
 
 export default function App() {
-  // Estado simple para controlar la navegación entre pantallas (US #3)
   const [currentScreen, setCurrentScreen] = useState('welcome');
 
   const renderItem = ({ item }) => (
@@ -25,16 +25,20 @@ export default function App() {
       <StatusBar style="dark" />
       {currentScreen === 'welcome' ? (
         <WelcomeScreen onNavigateToExpenses={() => setCurrentScreen('expenses')} />
+      ) : currentScreen === 'form' ? (
+        <ExpenseFormScreen onNavigateToExpenses={() => setCurrentScreen('expenses')} />
       ) : (
         <View style={styles.container}>
           <Text style={styles.title}>Listado de Gastos</Text>
+          <TouchableOpacity style={styles.addButton} onPress={() => setCurrentScreen('form')}>
+            <Text style={styles.addButtonText}>Cargar gasto</Text>
+          </TouchableOpacity>
           <FlatList
             data={EXPENSES}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
           />
-          <StatusBar style="dark" />
         </View>
       )}
     </SafeAreaView>
@@ -57,6 +61,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333333',
     marginBottom: 16,
+  },
+  addButton: {
+    backgroundColor: '#2b8a3e',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  addButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   listContainer: {
     paddingBottom: 20,
