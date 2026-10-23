@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, SafeAreaView, Platform, StatusBar as RNStatusBar } from 'react-native';
-import WelcomeScreen from './screens/WelcomeScreen';
+import WelcomeScreen from './src/Screens/WelcomeScreen';
 
 const EXPENSES = [
   { id: '1', description: 'Supermercado', amount: '$25000' },
