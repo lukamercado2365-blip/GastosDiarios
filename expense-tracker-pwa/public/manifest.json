@@ -1,0 +1,20 @@
+{
+  "short_name": "GastosDiarios",
+  "name": "Gastos Diarios - Expense Tracker",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#2b8a3e",
+  "display": "standalone"
+}
