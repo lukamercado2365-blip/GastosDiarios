@@ -2,13 +2,18 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import InstallBanner from '../components/InstallBanner';
 
 export default function SettingsScreen() {
-  const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
+  const { isInstallable, isInstalled, isIOS, promptInstall } = usePWAInstall();
 
   return (
     <div>
       <h2 style={{ fontSize: '1.25rem', color: '#333', marginBottom: '1rem' }}>Ajustes</h2>
 
-      <InstallBanner isInstallable={isInstallable} onInstall={promptInstall} />
+      <InstallBanner
+        isInstallable={isInstallable}
+        isInstalled={isInstalled}
+        isIOS={isIOS}
+        onInstall={promptInstall}
+      />
 
       <div
         style={{

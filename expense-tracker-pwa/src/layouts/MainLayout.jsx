@@ -1,6 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+import InstallBanner from '../components/InstallBanner';
 
 export default function MainLayout() {
+  const { isInstallable, isInstalled, isIOS, promptInstall } = usePWAInstall();
+
   return (
     <div
       style={{
@@ -34,6 +38,12 @@ export default function MainLayout() {
           paddingBottom: '5rem',
         }}
       >
+        <InstallBanner
+          isInstallable={isInstallable}
+          isInstalled={isInstalled}
+          isIOS={isIOS}
+          onInstall={promptInstall}
+        />
         <Outlet />
       </main>
 
