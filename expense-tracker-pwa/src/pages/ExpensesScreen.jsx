@@ -10,9 +10,9 @@ export default function ExpensesScreen() {
   const handleAddExpense = (newExpense) => {
     const created = {
       id: String(Date.now()),
-      description: newExpense.description,
+      description: newExpense.description || newExpense.name,
       amount: newExpense.amount,
-      category: { id: 'other', label: 'Otros', color: '#6C757D' },
+      category: newExpense.category || { id: 'other', label: 'Otros', color: '#6C757D' },
       date: new Date().toISOString().split('T')[0],
     };
     setExpenses([created, ...expenses]);
