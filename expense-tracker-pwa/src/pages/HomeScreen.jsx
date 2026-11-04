@@ -38,11 +38,13 @@ export default function HomeScreen() {
         </Link>
       </div>
 
-      <div>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {mockExpenses.slice(0, 3).map((expense) => (
-          <ExpenseCard key={expense.id} expense={expense} />
+          <li key={expense.id}>
+            <ExpenseCard expense={expense} />
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
