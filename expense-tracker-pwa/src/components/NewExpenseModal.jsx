@@ -1,8 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { EXPENSE_CATEGORIES } from '../data/mockExpenses';
 
 export default function NewExpenseModal({ isOpen, onClose, onSave }) {
   const dialogRef = useRef(null);
+  const [nombre, setNombre] = useState('');
+  const [monto, setMonto] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(EXPENSE_CATEGORIES[0]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -19,115 +23,137 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
     }
   }, [isOpen]);
 
+  const handleDialogClick = (e) => {
+    if (e.target === dialogRef.current) {
+      onClose();
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const parsedAmount = parseFloat(monto);
+    console.log('Gasto enviado:', {
+      nombre,
+      monto: parsedAmount,
+      categoria: selectedCategory,
+    });
+
+    if (onSave) {
+      onSave({
+        name: nombre,
+        description: nombre,
+        amount: parsedAmount,
+        category: selectedCategory,
+      });
+    }
+
+    setNombre('');
+    setMonto('');
+    setSelectedCategory(EXPENSE_CATEGORIES[0]);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return createPortal(
     <dialog
       ref={dialogRef}
       onClose={onClose}
-      style={{
-        border: 'none',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        maxWidth: '400px',
-        width: '90%',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-      }}
+      onClick={handleDialogClick}
+      className="bottom-sheet-dialog"
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0, color: '#333' }}>Nuevo Gasto</h3>
+      <header className="modal-header">
+        <h3 className="modal-title">Cargar Gasto</h3>
         <button
-          onClick={onClose}
           type="button"
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '1.25rem',
-            cursor: 'pointer',
-          }}
+          onClick={onClose}
+          className="btn-modal-close"
+          aria-label="Cerrar formulario"
         >
           ✕
         </button>
-      </div>
+      </header>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const form = e.target;
-          const description = form.description.value;
-          const amount = parseFloat(form.amount.value);
-          if (onSave) {
-            onSave({ description, amount });
-          }
-          onClose();
-        }}
-      >
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            Descripción
-            <input
-              type="text"
-              name="description"
-              required
-              placeholder="Ej. Supermercado"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                boxSizing: 'border-box',
-                marginTop: '0.25rem',
-              }}
-            />
+      <form onSubmit={handleSubmit} className="modal-form">
+        <div className="form-group">
+          <label htmlFor="expense-name" className="form-label">
+            Nombre del gasto
           </label>
+          <input
+            id="expense-name"
+            type="text"
+            name="name"
+            required
+            placeholder="Ej. Almuerzo"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            className="form-input"
+          />
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            Monto ($)
-            <input
-              type="number"
-              name="amount"
-              inputMode="decimal"
-              required
-              placeholder="0"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                boxSizing: 'border-box',
-                marginTop: '0.25rem',
-              }}
-            />
+        <div className="form-group">
+          <label htmlFor="expense-amount" className="form-label">
+            Monto
           </label>
+          <input
+            id="expense-amount"
+            type="number"
+            step="any"
+            inputMode="decimal"
+            name="amount"
+            required
+            placeholder="0"
+            value={monto}
+            onChange={(e) => setMonto(e.target.value)}
+            className="form-input"
+          />
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+        <div className="form-group">
+          <label className="form-label">Categoría</label>
+          <div
+            className="category-chips-group"
+            role="radiogroup"
+            aria-label="Categoría del gasto"
+          >
+            {EXPENSE_CATEGORIES.map((cat) => {
+              const isSelected = selectedCategory?.id === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  className={`category-chip ${isSelected ? 'category-chip-active' : ''}`}
+                  onClick={() => setSelectedCategory(cat)}
+                  style={{
+                    borderColor: isSelected ? cat.color : undefined,
+                    backgroundColor: isSelected ? `${cat.color}20` : undefined,
+                    color: isSelected ? cat.color : undefined,
+                  }}
+                >
+                  <span
+                    className="category-chip-dot"
+                    style={{ backgroundColor: cat.color }}
+                  />
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="modal-actions">
           <button
             type="button"
             onClick={onClose}
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              border: '1px solid #ccc',
-              background: '#f8f9fa',
-              cursor: 'pointer',
-            }}
+            className="btn-modal-cancel"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              border: 'none',
-              background: '#2b8a3e',
-              color: '#fff',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
+            className="btn-modal-save"
           >
             Guardar
           </button>

@@ -220,3 +220,229 @@ button:active {
 .btn-welcome-secondary:hover {
   background-color: #e8f5e9;
 }
+
+/* ========================================================
+   Formulario de carga de gastos - Bottom Sheet Modal (US #5)
+   ======================================================== */
+
+.bottom-sheet-dialog {
+  border: none;
+  padding: 0;
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 18px 18px 0 0;
+  background-color: var(--color-surface);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUpBottomSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.bottom-sheet-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  animation: fadeInBackdrop 0.25s ease-out;
+}
+
+@keyframes slideUpBottomSheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justifyContent: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.btn-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+}
+
+.btn-modal-close:hover {
+  background-color: #f1f3f5;
+  color: var(--color-text);
+}
+
+.modal-form {
+  padding: 1.25rem;
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  max-height: calc(90dvh - 70px);
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-sizing: border-box;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--color-text);
+  background-color: #f9fafb;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(43, 138, 62, 0.15);
+  background-color: #ffffff;
+}
+
+.category-chips-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.category-chip {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.9rem;
+  border-radius: 22px;
+  border: 1px solid var(--color-border);
+  background-color: #f8f9fa;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.category-chip:hover {
+  background-color: #e9ecef;
+}
+
+.category-chip.category-chip-active {
+  font-weight: 600;
+  border-width: 1.5px;
+}
+
+.category-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btn-modal-cancel {
+  flex: 1;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background-color: #f8f9fa;
+  color: #495057;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease;
+}
+
+.btn-modal-cancel:hover {
+  background-color: #e9ecef;
+}
+
+.btn-modal-save {
+  flex: 1;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease;
+}
+
+.btn-modal-save:hover {
+  background-color: var(--color-primary-dark);
+}
