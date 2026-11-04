@@ -7,6 +7,29 @@ export default function HomeScreen() {
 
   return (
     <div>
+      {/* Sección de bienvenida */}
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '1.5rem 1rem 1.25rem',
+          marginBottom: '1.25rem',
+        }}
+      >
+        <h2 style={{ margin: '0 0 0.5rem', color: '#2b8a3e', fontSize: '1.5rem' }}>
+          ExpenseTracker
+        </h2>
+        <p style={{ margin: '0 0 0.35rem', fontSize: '1.1rem', fontWeight: '600', color: '#212529' }}>
+          ¡Te damos la bienvenida!
+        </p>
+        <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: '#6c757d' }}>
+          Registrá y controlá tus gastos diarios de forma simple.
+        </p>
+        <Link to="/expenses" className="btn-primary tap-feedback">
+          Ver mis gastos
+        </Link>
+      </div>
+
+      {/* Resumen de total acumulado */}
       <div
         style={{
           backgroundColor: '#e8f5e9',
@@ -27,6 +50,7 @@ export default function HomeScreen() {
         <h3 style={{ margin: 0, color: '#333' }}>Gastos Recientes</h3>
         <Link
           to="/expenses"
+          className="tap-feedback"
           style={{
             color: '#2b8a3e',
             textDecoration: 'none',

@@ -39,11 +39,13 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
         <button
           onClick={onClose}
           type="button"
+          className="tap-feedback"
           style={{
             background: 'none',
             border: 'none',
             fontSize: '1.25rem',
             cursor: 'pointer',
+            display: 'inline-block',
           }}
         >
           ✕
@@ -107,27 +109,22 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
           <button
             type="button"
             onClick={onClose}
+            className="tap-feedback"
             style={{
               padding: '0.5rem 1rem',
               borderRadius: '6px',
               border: '1px solid #ccc',
               background: '#f8f9fa',
               cursor: 'pointer',
+              display: 'inline-block',
             }}
           >
             Cancelar
           </button>
           <button
             type="submit"
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              border: 'none',
-              background: '#2b8a3e',
-              color: '#fff',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
+            className="btn-primary tap-feedback"
+            style={{ padding: '0.5rem 1rem', fontSize: '0.95rem' }}
           >
             Guardar
           </button>

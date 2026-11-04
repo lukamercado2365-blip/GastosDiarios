@@ -14,14 +14,8 @@ export default function ExpenseDetailScreen() {
         <p>Gasto no encontrado.</p>
         <button
           onClick={() => navigate(-1)}
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#2b8a3e',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-          }}
+          className="btn-primary tap-feedback"
+          style={{ marginTop: '1rem' }}
         >
           Volver
         </button>
@@ -40,6 +34,7 @@ export default function ExpenseDetailScreen() {
     >
       <button
         onClick={() => navigate(-1)}
+        className="tap-feedback"
         style={{
           background: 'none',
           border: 'none',
@@ -49,6 +44,7 @@ export default function ExpenseDetailScreen() {
           cursor: 'pointer',
           marginBottom: '1rem',
           padding: 0,
+          display: 'inline-block',
         }}
       >
         ← Volver

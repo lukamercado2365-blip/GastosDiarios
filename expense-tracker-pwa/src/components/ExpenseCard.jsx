@@ -9,8 +9,9 @@ export default function ExpenseCard({ expense }) {
   if (!expense) return null;
 
   return (
-    <div
-      className="expense-card"
+    <Link
+      to={`/expenses/${expense.id}`}
+      className="expense-card tap-feedback"
       style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -20,20 +21,19 @@ export default function ExpenseCard({ expense }) {
         borderRadius: '8px',
         border: '1px solid #e0e0e0',
         marginBottom: '0.75rem',
+        textDecoration: 'none',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <Link
-          to={`/expenses/${expense.id}`}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+        <span
           style={{
             color: '#212529',
-            textDecoration: 'none',
             fontWeight: '600',
             fontSize: '1rem',
           }}
         >
           {expense.description}
-        </Link>
+        </span>
         <CategoryBadge category={expense.category} />
       </div>
       <span
@@ -45,6 +45,6 @@ export default function ExpenseCard({ expense }) {
       >
         {formatAmount(expense.amount)}
       </span>
-    </div>
+    </Link>
   );
 }
