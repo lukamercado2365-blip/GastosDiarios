@@ -11,7 +11,7 @@ export default function ExpenseCard({ expense }) {
   return (
     <Link
       to={`/expenses/${expense.id}`}
-      className="expense-card"
+      className="expense-card tap-feedback"
       style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -25,7 +25,7 @@ export default function ExpenseCard({ expense }) {
         color: 'inherit',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
         <span
           style={{
             color: '#212529',
@@ -35,9 +35,7 @@ export default function ExpenseCard({ expense }) {
         >
           {expense.description}
         </span>
-        <div>
-          <CategoryBadge category={expense.category} />
-        </div>
+        <CategoryBadge category={expense.category} />
       </div>
       <span
         style={{

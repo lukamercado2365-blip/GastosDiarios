@@ -27,15 +27,8 @@ export default function ExpensesScreen() {
         <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#333' }}>Listado de Gastos</h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          style={{
-            backgroundColor: '#2b8a3e',
-            color: '#fff',
-            border: 'none',
-            padding: '0.5rem 0.85rem',
-            borderRadius: '6px',
-            fontWeight: '600',
-            cursor: 'pointer',
-          }}
+          className="btn-primary tap-feedback"
+          style={{ padding: '0.5rem 0.85rem', fontSize: '0.9rem' }}
         >
           + Cargar gasto
         </button>

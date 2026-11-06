@@ -46,16 +46,8 @@ export default function ExpenseDetailScreen() {
         </p>
         <button
           onClick={handleBack}
-          style={{
-            padding: '0.6rem 1.25rem',
-            backgroundColor: '#2b8a3e',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontWeight: '600',
-            fontSize: '0.95rem',
-          }}
+          className="btn-primary tap-feedback"
+          style={{ marginTop: '1rem' }}
         >
           Volver a gastos
         </button>
@@ -74,6 +66,7 @@ export default function ExpenseDetailScreen() {
     >
       <button
         onClick={handleBack}
+        className="tap-feedback"
         style={{
           background: 'none',
           border: 'none',

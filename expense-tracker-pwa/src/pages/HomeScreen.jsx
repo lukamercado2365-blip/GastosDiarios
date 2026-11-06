@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { mockExpenses as initialExpenses } from '../data/mockExpenses';
 import NewExpenseModal from '../components/NewExpenseModal';
+import ExpenseCard from '../components/ExpenseCard';
 
 export default function HomeScreen() {
   const [expenses, setExpenses] = useState(initialExpenses);
@@ -13,9 +14,9 @@ export default function HomeScreen() {
   const handleAddExpense = (newExpense) => {
     const created = {
       id: String(Date.now()),
-      description: newExpense.description,
+      description: newExpense.description || newExpense.name,
       amount: newExpense.amount,
-      category: { id: 'other', label: 'Otros', color: '#6C757D' },
+      category: newExpense.category || { id: 'other', label: 'Otros', color: '#6C757D' },
       date: new Date().toISOString().split('T')[0],
     };
     setExpenses((prev) => [created, ...prev]);
@@ -44,14 +45,24 @@ export default function HomeScreen() {
         <section className="welcome-actions">
           <button
             type="button"
-            className="btn-welcome-primary"
+            className="btn-welcome-primary tap-feedback"
             onClick={() => setIsModalOpen(true)}
           >
             Registrar Nuevo Gasto
           </button>
-          <Link to="/expenses" className="btn-welcome-secondary">
+          <Link to="/expenses" className="btn-welcome-secondary tap-feedback">
             Ver Listado Completo
           </Link>
+        </section>
+
+        <section className="welcome-recent" aria-labelledby="recent-expenses-title">
+          <div className="welcome-recent-heading">
+            <h2 id="recent-expenses-title">Gastos recientes</h2>
+            <Link to="/expenses" className="tap-feedback">Ver todos</Link>
+          </div>
+          {expenses.slice(0, 3).map((expense) => (
+            <ExpenseCard key={expense.id} expense={expense} />
+          ))}
         </section>
       </section>
 

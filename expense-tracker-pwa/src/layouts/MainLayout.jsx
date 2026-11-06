@@ -1,6 +1,7 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import InstallBanner from '../components/InstallBanner';
+import BottomNav from '../components/BottomNav';
 
 export default function MainLayout() {
   const { isInstallable, isInstalled, isIOS, promptInstall } = usePWAInstall();
@@ -21,41 +22,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
 
-      <nav className="app-nav">
-        <NavLink
-          to="/"
-          style={({ isActive }) => ({
-            textDecoration: 'none',
-            color: isActive ? '#2b8a3e' : '#6c757d',
-            fontWeight: isActive ? '700' : '400',
-            fontSize: '0.9rem',
-          })}
-        >
-          Inicio
-        </NavLink>
-        <NavLink
-          to="/expenses"
-          style={({ isActive }) => ({
-            textDecoration: 'none',
-            color: isActive ? '#2b8a3e' : '#6c757d',
-            fontWeight: isActive ? '700' : '400',
-            fontSize: '0.9rem',
-          })}
-        >
-          Gastos
-        </NavLink>
-        <NavLink
-          to="/settings"
-          style={({ isActive }) => ({
-            textDecoration: 'none',
-            color: isActive ? '#2b8a3e' : '#6c757d',
-            fontWeight: isActive ? '700' : '400',
-            fontSize: '0.9rem',
-          })}
-        >
-          Ajustes
-        </NavLink>
-      </nav>
+      <BottomNav />
     </div>
   );
 }

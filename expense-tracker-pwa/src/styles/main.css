@@ -21,14 +21,93 @@ body {
     Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* App-like: sin rebote vertical y sin scroll horizontal */
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
 }
 
 button {
   font-family: inherit;
 }
 
-button:active {
+/* === Bottom Navigation === */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-around;
+  padding: 0.75rem 0;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  /* Desactivar selección de texto en la barra de navegación */
+  user-select: none;
+  z-index: 10;
+}
+
+/* === Tab links === */
+.tab-link {
+  display: inline-block; /* necesario para que transform: scale funcione en <a> */
+  text-decoration: none;
+  color: #6c757d;
+  font-weight: 400;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 100ms ease, transform 100ms ease;
+}
+
+.tab-link--active {
+  color: #2b8a3e;
+  font-weight: 700;
+}
+
+/* === Feedback táctil universal === */
+.tap-feedback {
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 100ms ease, transform 100ms ease;
+}
+
+.tap-feedback:active {
   opacity: 0.85;
+  transform: scale(0.98);
+}
+
+/* Hover solo en dispositivos que lo soportan (mejora adicional, nunca único indicador) */
+@media (hover: hover) {
+  .tap-feedback:hover {
+    opacity: 0.9;
+  }
+}
+
+/* Foco visible para accesibilidad de teclado */
+.tap-feedback:focus-visible {
+  outline: 2px solid #2b8a3e;
+  outline-offset: 2px;
+}
+
+/* === Botón primario reutilizable === */
+.btn-primary {
+  display: inline-block;
+  background-color: #2b8a3e;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  font-family: inherit;
+}
+
+/* === ExpenseCard como link (display:block para que ocupe todo el ancho) === */
+a.expense-card {
+  display: flex; /* ya tiene display flex por estilo inline, pero lo reforzamos */
 }
 
 /* Layout semántico principal */
@@ -62,7 +141,7 @@ button:active {
   margin: 0 auto;
   padding: 1rem;
   box-sizing: border-box;
-  padding-bottom: 5rem;
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
 }
@@ -176,6 +255,33 @@ button:active {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.welcome-recent {
+  width: 100%;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.welcome-recent-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.welcome-recent-heading h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.welcome-recent-heading a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .btn-welcome-primary {

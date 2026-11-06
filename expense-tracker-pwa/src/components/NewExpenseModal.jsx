@@ -67,7 +67,7 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
         <button
           type="button"
           onClick={onClose}
-          className="btn-modal-close"
+          className="btn-modal-close tap-feedback"
           aria-label="Cerrar formulario"
         >
           ✕
@@ -147,13 +147,14 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
           <button
             type="button"
             onClick={onClose}
-            className="btn-modal-cancel"
+            className="btn-modal-cancel tap-feedback"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="btn-modal-save"
+            className="btn-primary tap-feedback"
+            style={{ padding: '0.5rem 1rem', fontSize: '0.95rem' }}
           >
             Guardar
           </button>
