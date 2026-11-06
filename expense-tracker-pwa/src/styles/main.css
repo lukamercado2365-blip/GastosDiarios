@@ -332,24 +332,26 @@ a.expense-card {
    ======================================================== */
 
 .bottom-sheet-dialog {
+  position: fixed;
   border: none;
   padding: 0;
-  top: auto;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: 100%;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  width: min(100% - 2rem, 520px);
   max-width: 520px;
-  border-radius: 18px 18px 0 0;
+  border-radius: 18px;
   background-color: var(--color-surface);
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   max-height: 90vh;
-  max-height: 90dvh;
+  max-height: min(90vh, 90dvh);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  animation: slideUpBottomSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeInBackdrop 0.2s ease-out;
   box-sizing: border-box;
 }
 
@@ -357,15 +359,6 @@ a.expense-card {
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(2px);
   animation: fadeInBackdrop 0.25s ease-out;
-}
-
-@keyframes slideUpBottomSheet {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
 }
 
 @keyframes fadeInBackdrop {
@@ -378,9 +371,12 @@ a.expense-card {
 }
 
 .modal-header {
-  display: flex;
-  justifyContent: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-surface);
@@ -391,12 +387,14 @@ a.expense-card {
 
 .modal-title {
   margin: 0;
+  min-width: 0;
   font-size: 1.25rem;
   font-weight: 700;
   color: #1f2937;
 }
 
 .btn-modal-close {
+  justify-self: end;
   background: none;
   border: none;
   font-size: 1.25rem;
@@ -417,10 +415,12 @@ a.expense-card {
 }
 
 .modal-form {
+  min-height: 0;
   padding: 1.25rem;
   padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
-  max-height: calc(90dvh - 70px);
+  max-height: calc(90vh - 80px);
+  max-height: calc(90dvh - 80px);
   overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
