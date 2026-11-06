@@ -1,50 +1,65 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { mockExpenses } from '../data/mockExpenses';
-import ExpenseCard from '../components/ExpenseCard';
+import { mockExpenses as initialExpenses } from '../data/mockExpenses';
+import NewExpenseModal from '../components/NewExpenseModal';
 
 export default function HomeScreen() {
-  const totalAmount = mockExpenses.reduce((sum, item) => sum + item.amount, 0);
+  const [expenses, setExpenses] = useState(initialExpenses);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const totalAmount = expenses.reduce((sum, item) => sum + item.amount, 0);
+  const totalMovements = expenses.length;
+
+  const handleAddExpense = (newExpense) => {
+    const created = {
+      id: String(Date.now()),
+      description: newExpense.description,
+      amount: newExpense.amount,
+      category: { id: 'other', label: 'Otros', color: '#6C757D' },
+      date: new Date().toISOString().split('T')[0],
+    };
+    setExpenses((prev) => [created, ...prev]);
+  };
 
   return (
-    <div>
-      <div
-        style={{
-          backgroundColor: '#e8f5e9',
-          borderRadius: '12px',
-          padding: '1.25rem',
-          marginBottom: '1.5rem',
-          textAlign: 'center',
-        }}
-      >
-        <span style={{ fontSize: '0.9rem', color: '#1b5e20', fontWeight: '500' }}>Total Acumulado</span>
-        <h2 style={{ margin: '0.25rem 0', color: '#1b5e20', fontSize: '1.75rem' }}>
-          ${totalAmount.toLocaleString('es-AR')}
-        </h2>
-        <span style={{ fontSize: '0.8rem', color: '#2e7d32' }}>{mockExpenses.length} gastos registrados</span>
-      </div>
+    <section className="welcome-screen">
+      <section className="welcome-card">
+        <header className="welcome-card-header">
+          <h1 className="welcome-title">ExpenseTracker</h1>
+          <p className="welcome-greeting">¡Te damos la bienvenida!</p>
+        </header>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0, color: '#333' }}>Gastos Recientes</h3>
-        <Link
-          to="/expenses"
-          style={{
-            color: '#2b8a3e',
-            textDecoration: 'none',
-            fontSize: '0.9rem',
-            fontWeight: '600',
-          }}
-        >
-          Ver todos →
-        </Link>
-      </div>
+        <p className="welcome-description">
+          Registrá y controlá tus gastos diarios de forma simple.
+        </p>
 
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-        {mockExpenses.slice(0, 3).map((expense) => (
-          <li key={expense.id}>
-            <ExpenseCard expense={expense} />
-          </li>
-        ))}
-      </ul>
-    </div>
+        <section className="welcome-summary">
+          <p className="summary-title">Total registrado</p>
+          <p className="summary-total">${totalAmount.toLocaleString('es-AR')}</p>
+          <p className="summary-movements">
+            {totalMovements} {totalMovements === 1 ? 'movimiento registrado' : 'movimientos registrados'}
+          </p>
+        </section>
+
+        <section className="welcome-actions">
+          <button
+            type="button"
+            className="btn-welcome-primary"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Registrar Nuevo Gasto
+          </button>
+          <Link to="/expenses" className="btn-welcome-secondary">
+            Ver Listado Completo
+          </Link>
+        </section>
+      </section>
+
+      <NewExpenseModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleAddExpense}
+      />
+    </section>
   );
 }
