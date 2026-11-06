@@ -9,7 +9,8 @@ export default function ExpenseCard({ expense }) {
   if (!expense) return null;
 
   return (
-    <div
+    <Link
+      to={`/expenses/${expense.id}`}
       className="expense-card"
       style={{
         display: 'flex',
@@ -20,31 +21,34 @@ export default function ExpenseCard({ expense }) {
         borderRadius: '8px',
         border: '1px solid #e0e0e0',
         marginBottom: '0.75rem',
+        textDecoration: 'none',
+        color: 'inherit',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <Link
-          to={`/expenses/${expense.id}`}
+        <span
           style={{
             color: '#212529',
-            textDecoration: 'none',
             fontWeight: '600',
             fontSize: '1rem',
           }}
         >
           {expense.description}
-        </Link>
-        <CategoryBadge category={expense.category} />
+        </span>
+        <div>
+          <CategoryBadge category={expense.category} />
+        </div>
       </div>
       <span
         style={{
           color: '#2b8a3e',
           fontWeight: '700',
           fontSize: '1.05rem',
+          whiteSpace: 'nowrap',
         }}
       >
         {formatAmount(expense.amount)}
       </span>
-    </div>
+    </Link>
   );
 }

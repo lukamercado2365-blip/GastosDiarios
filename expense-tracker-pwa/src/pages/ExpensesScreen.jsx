@@ -14,6 +14,7 @@ export default function ExpensesScreen() {
       amount: newExpense.amount,
       category: newExpense.category || { id: 'other', label: 'Otros', color: '#6C757D' },
       date: new Date().toISOString().split('T')[0],
+      notes: '',
     };
     setExpenses([created, ...expenses]);
   };
@@ -40,11 +41,13 @@ export default function ExpensesScreen() {
         </button>
       </div>
 
-      <div>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {expenses.map((expense) => (
-          <ExpenseCard key={expense.id} expense={expense} />
+          <li key={expense.id}>
+            <ExpenseCard expense={expense} />
+          </li>
         ))}
-      </div>
+      </ul>
 
       <div
         style={{
