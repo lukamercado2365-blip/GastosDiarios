@@ -15,33 +15,27 @@ export default function ExpensesScreen() {
         <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#333' }}>Listado de Gastos</h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          style={{
-            backgroundColor: '#2b8a3e',
-            color: '#fff',
-            border: 'none',
-            padding: '0.5rem 0.85rem',
-            borderRadius: '6px',
-            fontWeight: '600',
-            cursor: 'pointer',
-          }}
+          className="btn-primary tap-feedback"
+          style={{ padding: '0.5rem 0.85rem', fontSize: '0.9rem' }}
         >
           + Cargar gasto
         </button>
       </div>
 
-      <div>
-        {expenses.length === 0 ? (
-          <p style={{ color: '#6c757d', textAlign: 'center', padding: '1rem' }}>No hay gastos registrados.</p>
-        ) : (
-          expenses.map((expense) => (
-            <ExpenseCard
-              key={expense.id}
-              expense={expense}
-              onDelete={removeExpense}
-            />
-          ))
-        )}
-      </div>
+      {expenses.length === 0 ? (
+        <p style={{ color: '#6c757d', textAlign: 'center', padding: '1.5rem' }}>No hay gastos registrados aún.</p>
+      ) : (
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          {expenses.map((expense) => (
+            <li key={expense.id}>
+              <ExpenseCard
+                expense={expense}
+                onDelete={removeExpense}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div
         style={{

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "npm --prefix expense-tracker-pwa ci",
+  "buildCommand": "npm --prefix expense-tracker-pwa run build",
+  "outputDirectory": "expense-tracker-pwa/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

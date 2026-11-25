@@ -18,6 +18,7 @@ export const mockExpenses = [
     amount: 25000,
     category: EXPENSE_CATEGORIES[0],
     date: '2026-10-21',
+    notes: 'Compras semanales de alimentos y artículos de limpieza.',
   },
   {
     id: '2',
@@ -25,6 +26,7 @@ export const mockExpenses = [
     amount: 18000,
     category: EXPENSE_CATEGORIES[1],
     date: '2026-10-21',
+    notes: 'Carga de nafta súper en estación YPF.',
   },
   {
     id: '3',
@@ -32,5 +34,6 @@ export const mockExpenses = [
     amount: 32000,
     category: EXPENSE_CATEGORIES[7],
     date: '2026-10-21',
+    notes: 'Abono mensual del servicio de fibra óptica 300 megas.',
   },
 ];

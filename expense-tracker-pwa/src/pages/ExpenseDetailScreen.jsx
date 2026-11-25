@@ -2,6 +2,21 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useExpenses } from '../context/ExpensesContext';
 import CategoryBadge from '../components/CategoryBadge';
 
+function formatDate(dateString) {
+  if (!dateString) return 'Sin fecha';
+  try {
+    const cleanDate = String(dateString).split('T')[0];
+    const parts = cleanDate.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+  } catch {
+    return dateString;
+  }
+  return dateString;
+}
+
 export default function ExpenseDetailScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -9,22 +24,37 @@ export default function ExpenseDetailScreen() {
 
   const expense = expenses.find((item) => String(item.id) === String(id));
 
+  const handleBack = () => {
+    if (window.history.state?.idx === 0) {
+      navigate('/expenses');
+    } else {
+      navigate(-1);
+    }
+  };
+
   if (!expense) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <p>Gasto no encontrado.</p>
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '2rem 1.5rem',
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          border: '1px solid #e0e0e0',
+        }}
+      >
+        <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.25rem', color: '#333' }}>
+          Gasto no encontrado
+        </h2>
+        <p style={{ color: '#6c757d', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+          No existe ningún gasto registrado con el identificador #{id}.
+        </p>
         <button
-          onClick={() => navigate(-1)}
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#2b8a3e',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-          }}
+          onClick={handleBack}
+          className="btn-primary tap-feedback"
+          style={{ marginTop: '1rem' }}
         >
-          Volver
+          Volver a gastos
         </button>
       </div>
     );
@@ -35,7 +65,7 @@ export default function ExpenseDetailScreen() {
   const handleDelete = () => {
     if (window.confirm(`¿Estás seguro de que querés eliminar "${itemTitle}"?`)) {
       removeExpense(expense.id);
-      navigate(-1);
+      navigate('/expenses');
     }
   };
 
@@ -48,9 +78,10 @@ export default function ExpenseDetailScreen() {
         border: '1px solid #e0e0e0',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <button
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
+          className="tap-feedback"
           style={{
             background: 'none',
             border: 'none',
@@ -59,12 +90,16 @@ export default function ExpenseDetailScreen() {
             fontWeight: '600',
             cursor: 'pointer',
             padding: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.25rem',
           }}
         >
           ← Volver
         </button>
         <button
           onClick={handleDelete}
+          className="tap-feedback"
           style={{
             background: 'none',
             border: 'none',
@@ -75,28 +110,114 @@ export default function ExpenseDetailScreen() {
             padding: 0,
           }}
         >
-          Eliminar
+          🗑️ Eliminar
         </button>
       </div>
 
-      <h2 style={{ marginTop: 0, color: '#333' }}>{itemTitle}</h2>
-
-      <div style={{ marginBottom: '1rem' }}>
-        <CategoryBadge category={expense.category} />
-      </div>
-
-      <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#2b8a3e', marginBottom: '1rem' }}>
-        ${Number(expense.amount).toLocaleString('es-AR')}
-      </div>
-
-      {expense.notes ? (
-        <div style={{ color: '#495057', fontSize: '0.95rem', marginBottom: '0.75rem' }}>
-          <strong>Notas:</strong> {expense.notes}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div>
+          <span
+            style={{
+              display: 'block',
+              fontSize: '0.8rem',
+              color: '#6c757d',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontWeight: '600',
+              marginBottom: '0.25rem',
+            }}
+          >
+            Descripción
+          </span>
+          <h2 style={{ margin: 0, color: '#212529', fontSize: '1.35rem' }}>
+            {itemTitle}
+          </h2>
         </div>
-      ) : null}
 
-      <div style={{ color: '#6c757d', fontSize: '0.85rem' }}>
-        Fecha registrada: {expense.createdAt ? new Date(expense.createdAt).toLocaleDateString('es-AR') : (expense.date || 'Sin fecha')}
+        <div>
+          <span
+            style={{
+              display: 'block',
+              fontSize: '0.8rem',
+              color: '#6c757d',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontWeight: '600',
+              marginBottom: '0.25rem',
+            }}
+          >
+            Monto
+          </span>
+          <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#2b8a3e' }}>
+            ${Number(expense.amount).toLocaleString('es-AR')}
+          </div>
+        </div>
+
+        <div>
+          <span
+            style={{
+              display: 'block',
+              fontSize: '0.8rem',
+              color: '#6c757d',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontWeight: '600',
+              marginBottom: '0.35rem',
+            }}
+          >
+            Categoría
+          </span>
+          <CategoryBadge category={expense.category} />
+        </div>
+
+        <div>
+          <span
+            style={{
+              display: 'block',
+              fontSize: '0.8rem',
+              color: '#6c757d',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontWeight: '600',
+              marginBottom: '0.25rem',
+            }}
+          >
+            Fecha
+          </span>
+          <div style={{ color: '#212529', fontSize: '1rem' }}>
+            {formatDate(expense.createdAt || expense.date)}
+          </div>
+        </div>
+
+        <div>
+          <span
+            style={{
+              display: 'block',
+              fontSize: '0.8rem',
+              color: '#6c757d',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontWeight: '600',
+              marginBottom: '0.25rem',
+            }}
+          >
+            Notas
+          </span>
+          <div
+            style={{
+              color: expense.notes ? '#212529' : '#6c757d',
+              fontStyle: expense.notes ? 'normal' : 'italic',
+              fontSize: '0.95rem',
+              backgroundColor: '#f8f9fa',
+              padding: '0.75rem',
+              borderRadius: '6px',
+              border: '1px solid #e9ecef',
+              lineHeight: 1.4,
+            }}
+          >
+            {expense.notes || 'Sin notas'}
+          </div>
+        </div>
       </div>
     </div>
   );

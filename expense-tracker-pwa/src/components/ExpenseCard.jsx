@@ -12,7 +12,7 @@ export default function ExpenseCard({ expense, onDelete }) {
 
   return (
     <div
-      className="expense-card"
+      className="expense-card tap-feedback"
       style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -22,28 +22,40 @@ export default function ExpenseCard({ expense, onDelete }) {
         borderRadius: '8px',
         border: '1px solid #e0e0e0',
         marginBottom: '0.75rem',
+        textDecoration: 'none',
+        color: 'inherit',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <Link
-          to={`/expenses/${expense.id}`}
+      <Link
+        to={`/expenses/${expense.id}`}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem',
+          alignItems: 'flex-start',
+          textDecoration: 'none',
+          color: 'inherit',
+          flex: 1,
+        }}
+      >
+        <span
           style={{
             color: '#212529',
-            textDecoration: 'none',
             fontWeight: '600',
             fontSize: '1rem',
           }}
         >
           {itemTitle}
-        </Link>
+        </span>
         <CategoryBadge category={expense.category} />
-      </div>
+      </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <span
           style={{
             color: '#2b8a3e',
             fontWeight: '700',
             fontSize: '1.05rem',
+            whiteSpace: 'nowrap',
           }}
         >
           {formatAmount(expense.amount)}
@@ -51,7 +63,9 @@ export default function ExpenseCard({ expense, onDelete }) {
         {onDelete && (
           <button
             type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
               if (window.confirm(`¿Estás seguro de que querés eliminar "${itemTitle}"?`)) {
                 onDelete(expense.id);
               }

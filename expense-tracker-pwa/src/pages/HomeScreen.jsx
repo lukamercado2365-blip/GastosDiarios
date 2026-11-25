@@ -1,53 +1,69 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useExpenses } from '../context/ExpensesContext';
+import NewExpenseModal from '../components/NewExpenseModal';
 import ExpenseCard from '../components/ExpenseCard';
 
 export default function HomeScreen() {
-  const { expenses } = useExpenses();
+  const { expenses, addExpense } = useExpenses();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const totalAmount = expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const totalMovements = expenses.length;
 
   return (
-    <div>
-      <div
-        style={{
-          backgroundColor: '#e8f5e9',
-          borderRadius: '12px',
-          padding: '1.25rem',
-          marginBottom: '1.5rem',
-          textAlign: 'center',
-        }}
-      >
-        <span style={{ fontSize: '0.9rem', color: '#1b5e20', fontWeight: '500' }}>Total Acumulado</span>
-        <h2 style={{ margin: '0.25rem 0', color: '#1b5e20', fontSize: '1.75rem' }}>
-          ${totalAmount.toLocaleString('es-AR')}
-        </h2>
-        <span style={{ fontSize: '0.8rem', color: '#2e7d32' }}>{expenses.length} gastos registrados</span>
-      </div>
+    <section className="welcome-screen">
+      <section className="welcome-card">
+        <header className="welcome-card-header">
+          <h1 className="welcome-title">ExpenseTracker</h1>
+          <p className="welcome-greeting">¡Te damos la bienvenida!</p>
+        </header>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0, color: '#333' }}>Gastos Recientes</h3>
-        <Link
-          to="/expenses"
-          style={{
-            color: '#2b8a3e',
-            textDecoration: 'none',
-            fontSize: '0.9rem',
-            fontWeight: '600',
-          }}
-        >
-          Ver todos →
-        </Link>
-      </div>
+        <p className="welcome-description">
+          Registrá y controlá tus gastos diarios de forma simple.
+        </p>
 
-      <div>
-        {expenses.length === 0 ? (
-          <p style={{ color: '#6c757d', textAlign: 'center', padding: '1rem' }}>No hay gastos registrados aún.</p>
-        ) : (
-          expenses.slice(0, 3).map((expense) => (
-            <ExpenseCard key={expense.id} expense={expense} />
-          ))
-        )}
-      </div>
-    </div>
+        <section className="welcome-summary">
+          <p className="summary-title">Total registrado</p>
+          <p className="summary-total">${totalAmount.toLocaleString('es-AR')}</p>
+          <p className="summary-movements">
+            {totalMovements} {totalMovements === 1 ? 'movimiento registrado' : 'movimientos registrados'}
+          </p>
+        </section>
+
+        <section className="welcome-actions">
+          <button
+            type="button"
+            className="btn-welcome-primary tap-feedback"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Registrar Nuevo Gasto
+          </button>
+          <Link to="/expenses" className="btn-welcome-secondary tap-feedback">
+            Ver Listado Completo
+          </Link>
+        </section>
+
+        <section className="welcome-recent" aria-labelledby="recent-expenses-title">
+          <div className="welcome-recent-heading">
+            <h2 id="recent-expenses-title">Gastos recientes</h2>
+            <Link to="/expenses" className="tap-feedback">Ver todos</Link>
+          </div>
+          {expenses.length === 0 ? (
+            <p style={{ color: '#6c757d', textAlign: 'center', padding: '1rem' }}>No hay gastos registrados aún.</p>
+          ) : (
+            expenses.slice(0, 3).map((expense) => (
+              <ExpenseCard key={expense.id} expense={expense} />
+            ))
+          )}
+        </section>
+      </section>
+
+      <NewExpenseModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={addExpense}
+      />
+    </section>
   );
 }
