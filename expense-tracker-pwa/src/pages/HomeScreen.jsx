@@ -27,7 +27,9 @@ export default function HomeScreen() {
           <p className="summary-title">Total registrado</p>
           <p className="summary-total">${totalAmount.toLocaleString('es-AR')}</p>
           <p className="summary-movements">
-            {totalMovements} {totalMovements === 1 ? 'movimiento registrado' : 'movimientos registrados'}
+            {totalMovements === 0
+              ? 'Todavía no registraste gastos'
+              : `${totalMovements} ${totalMovements === 1 ? 'movimiento registrado' : 'movimientos registrados'}`}
           </p>
         </section>
 
@@ -50,7 +52,9 @@ export default function HomeScreen() {
             <Link to="/expenses" className="tap-feedback">Ver todos</Link>
           </div>
           {expenses.length === 0 ? (
-            <p style={{ color: '#6c757d', textAlign: 'center', padding: '1rem' }}>No hay gastos registrados aún.</p>
+            <p style={{ color: '#6c757d', textAlign: 'center', padding: '1rem', fontStyle: 'italic' }}>
+              Todavía no registraste gastos
+            </p>
           ) : (
             expenses.slice(0, 3).map((expense) => (
               <ExpenseCard key={expense.id} expense={expense} />

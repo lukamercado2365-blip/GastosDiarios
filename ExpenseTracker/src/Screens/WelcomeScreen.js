@@ -1,31 +1,37 @@
 import React from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { useExpenses } from '../context/ExpensesContext';
 
-/**
- * Pantalla de bienvenida (User Story #3 - #main-s1-us3)
- * Muestra el nombre de la app, mensaje de bienvenida y breve descripción del propósito,
- * junto con una acción para navegar al listado de gastos.
- */
 export default function WelcomeScreen({ onNavigateToExpenses, onVerGastos }) {
-  // Soporta ambas convenciones de prop para invocar la navegación hacia el listado
   const handlePress = onNavigateToExpenses || onVerGastos;
+  const { expenses } = useExpenses();
+
+  const totalAmount = expenses.reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
+  const totalMovements = expenses.length;
 
   return (
     <View style={styles.container}>
-      {/* Tarjeta principal con la información de bienvenida */}
       <View style={styles.card}>
-        {/* Título de la aplicación (elemento más destacado) */}
         <Text style={styles.title}>ExpenseTracker</Text>
-
-        {/* Mensaje de bienvenida inclusivo y neutro */}
         <Text style={styles.welcomeMessage}>¡Te damos la bienvenida!</Text>
-
-        {/* Breve descripción del propósito de la app */}
         <Text style={styles.description}>
           Registrá y controlá tus gastos diarios de forma simple.
         </Text>
 
-        {/* Botón para acceder al listado de gastos */}
+        {totalMovements === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Todavía no registraste gastos</Text>
+          </View>
+        ) : (
+          <View style={styles.summaryContainer}>
+            <Text style={styles.summaryLabel}>Total registrado</Text>
+            <Text style={styles.summaryAmount}>${totalAmount.toLocaleString('es-AR')}</Text>
+            <Text style={styles.summaryMovements}>
+              {totalMovements} {totalMovements === 1 ? 'movimiento registrado' : 'movimientos registrados'}
+            </Text>
+          </View>
+        )}
+
         <Pressable
           style={({ pressed }) => [
             styles.button,
@@ -62,25 +68,67 @@ const styles = StyleSheet.create({
     maxWidth: 360,
   },
   title: {
-    fontSize: 32, // >= 28 según requerimiento
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#333333',
     marginBottom: 12,
     textAlign: 'center',
   },
   welcomeMessage: {
-    fontSize: 22, // >= 20 según requerimiento
+    fontSize: 22,
     fontWeight: '600',
-    color: '#2b8a3e', // Verde de acento del proyecto
+    color: '#2b8a3e',
     marginBottom: 16,
     textAlign: 'center',
   },
   description: {
-    fontSize: 16, // >= 16 según requerimiento
+    fontSize: 16,
     color: '#212529',
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: 20,
+  },
+  emptyContainer: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  emptyText: {
+    fontSize: 15,
+    color: '#6c757d',
+    fontStyle: 'italic',
+  },
+  summaryContainer: {
+    backgroundColor: '#e8f5e9',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  summaryLabel: {
+    fontSize: 13,
+    color: '#1b5e20',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  summaryAmount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1b5e20',
+    marginVertical: 4,
+  },
+  summaryMovements: {
+    fontSize: 13,
+    color: '#2e7d32',
   },
   button: {
     backgroundColor: '#2b8a3e',

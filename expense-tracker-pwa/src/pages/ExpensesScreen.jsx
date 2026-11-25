@@ -23,7 +23,23 @@ export default function ExpensesScreen() {
       </div>
 
       {expenses.length === 0 ? (
-        <p style={{ color: '#6c757d', textAlign: 'center', padding: '1.5rem' }}>No hay gastos registrados aún.</p>
+        <div
+          style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            padding: '2.5rem 1rem',
+            textAlign: 'center',
+            border: '1px solid #e0e0e0',
+            marginTop: '1rem',
+          }}
+        >
+          <p style={{ color: '#495057', fontSize: '1.1rem', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
+            Todavía no registraste gastos
+          </p>
+          <p style={{ color: '#6c757d', fontSize: '0.9rem', margin: 0 }}>
+            Tocá en &quot;+ Cargar gasto&quot; para registrar el primero.
+          </p>
+        </div>
       ) : (
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {expenses.map((expense) => (

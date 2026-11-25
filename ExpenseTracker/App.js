@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import WelcomeScreen from './src/Screens/WelcomeScreen';
 import ExpenseFormScreen from './src/Screens/ExpenseFormScreen';
+import ExpenseDetailScreen from './src/Screens/ExpenseDetailScreen';
 import { getCategory } from './src/data/categories';
 import { ExpensesProvider, useExpenses } from './src/context/ExpensesContext';
 
@@ -24,16 +25,20 @@ function formatAmount(amount) {
 
 function ExpenseTrackerContent() {
   const [currentScreen, setCurrentScreen] = useState('welcome');
+  const [selectedExpenseId, setSelectedExpenseId] = useState(null);
   const { expenses, removeExpense } = useExpenses();
 
   useEffect(() => {
-    if (Platform.OS !== 'android' || currentScreen !== 'form') {
+    if (Platform.OS !== 'android') {
       return undefined;
     }
 
     const backSubscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      setCurrentScreen('expenses');
-      return true;
+      if (currentScreen === 'form' || currentScreen === 'detail') {
+        setCurrentScreen('expenses');
+        return true;
+      }
+      return false;
     });
 
     return () => backSubscription.remove();
@@ -50,13 +55,23 @@ function ExpenseTrackerContent() {
     );
   };
 
+  const handleOpenDetail = (id) => {
+    setSelectedExpenseId(id);
+    setCurrentScreen('detail');
+  };
+
   const renderItem = ({ item }) => {
     const categoryInfo = getCategory(item.category);
     const itemTitle = item.title || item.description || 'Sin título';
 
     return (
       <View style={styles.itemCard}>
-        <View style={styles.expenseDescription}>
+        <TouchableOpacity
+          style={styles.expenseDescription}
+          onPress={() => handleOpenDetail(item.id)}
+          accessibilityRole="button"
+          accessibilityLabel={`Ver detalle de ${itemTitle}`}
+        >
           <Text style={styles.description}>{itemTitle}</Text>
           <View style={styles.categoryLabel}>
             <Ionicons name={categoryInfo.icon} size={15} color={categoryInfo.color} />
@@ -64,9 +79,11 @@ function ExpenseTrackerContent() {
               {categoryInfo.label}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
         <View style={styles.amountContainer}>
-          <Text style={styles.amount}>{formatAmount(item.amount)}</Text>
+          <TouchableOpacity onPress={() => handleOpenDetail(item.id)}>
+            <Text style={styles.amount}>{formatAmount(item.amount)}</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.deleteButton}
             onPress={() => handleConfirmDelete(item.id, itemTitle)}
@@ -91,6 +108,11 @@ function ExpenseTrackerContent() {
         <ExpenseFormScreen
           onNavigateToExpenses={() => setCurrentScreen('expenses')}
         />
+      ) : currentScreen === 'detail' ? (
+        <ExpenseDetailScreen
+          expenseId={selectedExpenseId}
+          onNavigateBack={() => setCurrentScreen('expenses')}
+        />
       ) : (
         <View style={styles.container}>
           <Text style={styles.title}>Listado de Gastos</Text>
@@ -98,18 +120,27 @@ function ExpenseTrackerContent() {
             <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
             <Text style={styles.addButtonText}>Cargar gasto</Text>
           </TouchableOpacity>
-          <FlatList
-            data={expenses}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={renderItem}
-            contentContainerStyle={styles.listContainer}
-            ListFooterComponent={(
-              <View style={styles.totalCard}>
-                <Text style={styles.totalLabel}>Total de gastos</Text>
-                <Text style={styles.totalAmount}>{formatAmount(totalAmount)}</Text>
-              </View>
-            )}
-          />
+
+          {expenses.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="receipt-outline" size={48} color="#9ca3af" />
+              <Text style={styles.emptyTitle}>Todavía no registraste gastos</Text>
+              <Text style={styles.emptySubtitle}>Presioná &quot;Cargar gasto&quot; para registrar el primero.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={expenses}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={renderItem}
+              contentContainerStyle={styles.listContainer}
+              ListFooterComponent={(
+                <View style={styles.totalCard}>
+                  <Text style={styles.totalLabel}>Total de gastos</Text>
+                  <Text style={styles.totalAmount}>{formatAmount(totalAmount)}</Text>
+                </View>
+              )}
+            />
+          )}
         </View>
       )}
     </SafeAreaView>
@@ -222,5 +253,28 @@ const styles = StyleSheet.create({
     color: '#1b5e20',
     fontSize: 18,
     fontWeight: '700',
+  },
+  emptyContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    marginTop: 20,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#374151',
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
   },
 });
