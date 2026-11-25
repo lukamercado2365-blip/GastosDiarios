@@ -22,21 +22,33 @@ export default function ExpenseFormScreen({ onNavigateToExpenses }) {
   const [nombre, setNombre] = useState('');
   const [monto, setMonto] = useState('');
   const [categoria, setCategoria] = useState(null);
+  const [notes, setNotes] = useState('');
   const [categoryMenuVisible, setCategoryMenuVisible] = useState(false);
 
+  const parsedAmount = Number(monto.replace(',', '.'));
+  const isValid = nombre.trim().length > 0 && Number.isFinite(parsedAmount) && parsedAmount > 0 && categoria !== null;
+
   const handleGuardar = () => {
-    const parsedAmount = Number(monto.replace(',', '.'));
-    if (!nombre.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0 || !categoria) {
+    if (!isValid) {
+      Alert.alert('Datos incompletos', 'Por favor ingresá un nombre y un monto mayor a cero, y seleccioná una categoría.');
       return;
     }
 
+    // El monto se guarda como número y el formulario llama a addExpense()
     addExpense({
       title: nombre.trim(),
+      description: nombre.trim(),
       amount: parsedAmount,
       category: categoria.label,
+      notes: notes.trim(),
     });
 
-    Alert.alert('Gasto', '¡Gasto guardado correctamente!', [
+    setNombre('');
+    setMonto('');
+    setCategoria(null);
+    setNotes('');
+
+    Alert.alert('Gasto guardado', '¡El gasto se registró con éxito!', [
       { text: 'Aceptar', onPress: onNavigateToExpenses },
     ]);
   };
@@ -106,11 +118,23 @@ export default function ExpenseFormScreen({ onNavigateToExpenses }) {
               </TouchableOpacity>
             </View>
 
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Notas (opcional)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ej. Compra semanal"
+                placeholderTextColor="#888"
+                value={notes}
+                onChangeText={setNotes}
+                accessibilityLabel="Notas del gasto"
+              />
+            </View>
+
             <TouchableOpacity
-              style={[styles.button, (!nombre.trim() || !monto || !categoria) && styles.buttonDisabled]}
+              style={[styles.button, !isValid && styles.buttonDisabled]}
               onPress={handleGuardar}
               activeOpacity={0.8}
-              disabled={!nombre.trim() || !monto || !categoria}
+              disabled={!isValid}
             >
               <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
