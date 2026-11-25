@@ -1,25 +1,13 @@
 import { useState } from 'react';
-import { mockExpenses as initialExpenses } from '../data/mockExpenses';
+import { useExpenses } from '../context/ExpensesContext';
 import ExpenseCard from '../components/ExpenseCard';
 import NewExpenseModal from '../components/NewExpenseModal';
 
 export default function ExpensesScreen() {
-  const [expenses, setExpenses] = useState(initialExpenses);
+  const { expenses, addExpense, removeExpense } = useExpenses();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddExpense = (newExpense) => {
-    const created = {
-      id: String(Date.now()),
-      description: newExpense.description || newExpense.name,
-      amount: newExpense.amount,
-      category: newExpense.category || { id: 'other', label: 'Otros', color: '#6C757D' },
-      date: new Date().toISOString().split('T')[0],
-      notes: '',
-    };
-    setExpenses([created, ...expenses]);
-  };
-
-  const totalAmount = expenses.reduce((sum, item) => sum + item.amount, 0);
+  const totalAmount = expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
   return (
     <div>
@@ -34,13 +22,20 @@ export default function ExpensesScreen() {
         </button>
       </div>
 
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-        {expenses.map((expense) => (
-          <li key={expense.id}>
-            <ExpenseCard expense={expense} />
-          </li>
-        ))}
-      </ul>
+      {expenses.length === 0 ? (
+        <p style={{ color: '#6c757d', textAlign: 'center', padding: '1.5rem' }}>No hay gastos registrados aún.</p>
+      ) : (
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          {expenses.map((expense) => (
+            <li key={expense.id}>
+              <ExpenseCard
+                expense={expense}
+                onDelete={removeExpense}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div
         style={{
@@ -62,7 +57,7 @@ export default function ExpensesScreen() {
       <NewExpenseModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleAddExpense}
+        onSave={addExpense}
       />
     </div>
   );

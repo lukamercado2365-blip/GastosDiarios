@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { EXPENSE_CATEGORIES } from '../data/mockExpenses';
+import { CATEGORIES } from '../data/categories';
 
 export default function NewExpenseModal({ isOpen, onClose, onSave }) {
   const dialogRef = useRef(null);
   const [nombre, setNombre] = useState('');
   const [monto, setMonto] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(EXPENSE_CATEGORIES[0]);
+  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -32,24 +32,23 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const parsedAmount = parseFloat(monto);
-    console.log('Gasto enviado:', {
-      nombre,
-      monto: parsedAmount,
-      categoria: selectedCategory,
-    });
+    if (!nombre.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      return;
+    }
 
     if (onSave) {
       onSave({
-        name: nombre,
-        description: nombre,
+        title: nombre.trim(),
+        description: nombre.trim(),
         amount: parsedAmount,
-        category: selectedCategory,
+        category: selectedCategory.label,
+        notes: '',
       });
     }
 
     setNombre('');
     setMonto('');
-    setSelectedCategory(EXPENSE_CATEGORIES[0]);
+    setSelectedCategory(CATEGORIES[0]);
     onClose();
   };
 
@@ -116,7 +115,7 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
             role="radiogroup"
             aria-label="Categoría del gasto"
           >
-            {EXPENSE_CATEGORIES.map((cat) => {
+            {CATEGORIES.map((cat) => {
               const isSelected = selectedCategory?.id === cat.id;
               return (
                 <button

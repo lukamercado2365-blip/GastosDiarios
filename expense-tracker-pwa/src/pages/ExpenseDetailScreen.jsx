@@ -1,14 +1,18 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { mockExpenses } from '../data/mockExpenses';
+import { useExpenses } from '../context/ExpensesContext';
 import CategoryBadge from '../components/CategoryBadge';
 
 function formatDate(dateString) {
   if (!dateString) return 'Sin fecha';
-  const cleanDate = String(dateString).split('T')[0];
-  const parts = cleanDate.split('-');
-  if (parts.length === 3) {
-    const [year, month, day] = parts;
-    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  try {
+    const cleanDate = String(dateString).split('T')[0];
+    const parts = cleanDate.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+  } catch {
+    return dateString;
   }
   return dateString;
 }
@@ -16,8 +20,9 @@ function formatDate(dateString) {
 export default function ExpenseDetailScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { expenses, removeExpense } = useExpenses();
 
-  const expense = mockExpenses.find((item) => String(item.id) === String(id));
+  const expense = expenses.find((item) => String(item.id) === String(id));
 
   const handleBack = () => {
     if (window.history.state?.idx === 0) {
@@ -55,6 +60,15 @@ export default function ExpenseDetailScreen() {
     );
   }
 
+  const itemTitle = expense.title || expense.description || 'Sin título';
+
+  const handleDelete = () => {
+    if (window.confirm(`¿Estás seguro de que querés eliminar "${itemTitle}"?`)) {
+      removeExpense(expense.id);
+      navigate('/expenses');
+    }
+  };
+
   return (
     <div
       style={{
@@ -64,25 +78,41 @@ export default function ExpenseDetailScreen() {
         border: '1px solid #e0e0e0',
       }}
     >
-      <button
-        onClick={handleBack}
-        className="tap-feedback"
-        style={{
-          background: 'none',
-          border: 'none',
-          color: '#2b8a3e',
-          fontSize: '0.9rem',
-          fontWeight: '600',
-          cursor: 'pointer',
-          marginBottom: '1.25rem',
-          padding: 0,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.25rem',
-        }}
-      >
-        ← Volver
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+        <button
+          onClick={handleBack}
+          className="tap-feedback"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#2b8a3e',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            padding: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+          }}
+        >
+          ← Volver
+        </button>
+        <button
+          onClick={handleDelete}
+          className="tap-feedback"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#dc3545',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            padding: 0,
+          }}
+        >
+          🗑️ Eliminar
+        </button>
+      </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
@@ -100,7 +130,7 @@ export default function ExpenseDetailScreen() {
             Descripción
           </span>
           <h2 style={{ margin: 0, color: '#212529', fontSize: '1.35rem' }}>
-            {expense.description}
+            {itemTitle}
           </h2>
         </div>
 
@@ -155,7 +185,7 @@ export default function ExpenseDetailScreen() {
             Fecha
           </span>
           <div style={{ color: '#212529', fontSize: '1rem' }}>
-            {formatDate(expense.date)}
+            {formatDate(expense.createdAt || expense.date)}
           </div>
         </div>
 

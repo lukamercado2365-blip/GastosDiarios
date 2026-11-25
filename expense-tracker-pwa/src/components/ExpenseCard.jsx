@@ -5,12 +5,13 @@ function formatAmount(amount) {
   return `$${Number(amount).toLocaleString('es-AR')}`;
 }
 
-export default function ExpenseCard({ expense }) {
+export default function ExpenseCard({ expense, onDelete }) {
   if (!expense) return null;
 
+  const itemTitle = expense.title || expense.description || 'Sin título';
+
   return (
-    <Link
-      to={`/expenses/${expense.id}`}
+    <div
       className="expense-card tap-feedback"
       style={{
         display: 'flex',
@@ -25,7 +26,18 @@ export default function ExpenseCard({ expense }) {
         color: 'inherit',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+      <Link
+        to={`/expenses/${expense.id}`}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.25rem',
+          alignItems: 'flex-start',
+          textDecoration: 'none',
+          color: 'inherit',
+          flex: 1,
+        }}
+      >
         <span
           style={{
             color: '#212529',
@@ -33,20 +45,45 @@ export default function ExpenseCard({ expense }) {
             fontSize: '1rem',
           }}
         >
-          {expense.description}
+          {itemTitle}
         </span>
         <CategoryBadge category={expense.category} />
+      </Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <span
+          style={{
+            color: '#2b8a3e',
+            fontWeight: '700',
+            fontSize: '1.05rem',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {formatAmount(expense.amount)}
+        </span>
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              if (window.confirm(`¿Estás seguro de que querés eliminar "${itemTitle}"?`)) {
+                onDelete(expense.id);
+              }
+            }}
+            aria-label={`Eliminar ${itemTitle}`}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#dc3545',
+              fontSize: '1rem',
+              padding: '4px',
+            }}
+          >
+            🗑️
+          </button>
+        )}
       </div>
-      <span
-        style={{
-          color: '#2b8a3e',
-          fontWeight: '700',
-          fontSize: '1.05rem',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {formatAmount(expense.amount)}
-      </span>
-    </Link>
+    </div>
   );
 }

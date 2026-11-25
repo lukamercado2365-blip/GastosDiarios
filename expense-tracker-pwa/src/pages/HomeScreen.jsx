@@ -1,26 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { mockExpenses as initialExpenses } from '../data/mockExpenses';
+import { useExpenses } from '../context/ExpensesContext';
 import NewExpenseModal from '../components/NewExpenseModal';
 import ExpenseCard from '../components/ExpenseCard';
 
 export default function HomeScreen() {
-  const [expenses, setExpenses] = useState(initialExpenses);
+  const { expenses, addExpense } = useExpenses();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const totalAmount = expenses.reduce((sum, item) => sum + item.amount, 0);
+  const totalAmount = expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   const totalMovements = expenses.length;
-
-  const handleAddExpense = (newExpense) => {
-    const created = {
-      id: String(Date.now()),
-      description: newExpense.description || newExpense.name,
-      amount: newExpense.amount,
-      category: newExpense.category || { id: 'other', label: 'Otros', color: '#6C757D' },
-      date: new Date().toISOString().split('T')[0],
-    };
-    setExpenses((prev) => [created, ...prev]);
-  };
 
   return (
     <section className="welcome-screen">
@@ -60,16 +49,20 @@ export default function HomeScreen() {
             <h2 id="recent-expenses-title">Gastos recientes</h2>
             <Link to="/expenses" className="tap-feedback">Ver todos</Link>
           </div>
-          {expenses.slice(0, 3).map((expense) => (
-            <ExpenseCard key={expense.id} expense={expense} />
-          ))}
+          {expenses.length === 0 ? (
+            <p style={{ color: '#6c757d', textAlign: 'center', padding: '1rem' }}>No hay gastos registrados aún.</p>
+          ) : (
+            expenses.slice(0, 3).map((expense) => (
+              <ExpenseCard key={expense.id} expense={expense} />
+            ))
+          )}
         </section>
       </section>
 
       <NewExpenseModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleAddExpense}
+        onSave={addExpense}
       />
     </section>
   );
