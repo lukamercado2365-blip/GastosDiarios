@@ -6,6 +6,7 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
   const dialogRef = useRef(null);
   const [nombre, setNombre] = useState('');
   const [monto, setMonto] = useState('');
+  const [notes, setNotes] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
 
   useEffect(() => {
@@ -42,12 +43,13 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
         description: nombre.trim(),
         amount: parsedAmount,
         category: selectedCategory.label,
-        notes: '',
+        notes: notes.trim(),
       });
     }
 
     setNombre('');
     setMonto('');
+    setNotes('');
     setSelectedCategory(CATEGORIES[0]);
     onClose();
   };
@@ -140,6 +142,21 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
               );
             })}
           </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="expense-notes" className="form-label">
+            Notas (opcional)
+          </label>
+          <input
+            id="expense-notes"
+            type="text"
+            name="notes"
+            placeholder="Ej. Compra semanal del súper"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="form-input"
+          />
         </div>
 
         <div className="modal-actions">
