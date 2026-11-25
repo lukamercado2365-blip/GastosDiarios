@@ -14,9 +14,11 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { EXPENSE_CATEGORIES } from '../Components/expenseCategories';
+import { CATEGORIES } from '../data/categories';
+import { useExpenses } from '../context/ExpensesContext';
 
 export default function ExpenseFormScreen({ onNavigateToExpenses }) {
+  const { addExpense } = useExpenses();
   const [nombre, setNombre] = useState('');
   const [monto, setMonto] = useState('');
   const [categoria, setCategoria] = useState(null);
@@ -28,7 +30,13 @@ export default function ExpenseFormScreen({ onNavigateToExpenses }) {
       return;
     }
 
-    Alert.alert('Gasto', '¡Formulario enviado correctamente!', [
+    addExpense({
+      title: nombre.trim(),
+      amount: parsedAmount,
+      category: categoria.label,
+    });
+
+    Alert.alert('Gasto', '¡Gasto guardado correctamente!', [
       { text: 'Aceptar', onPress: onNavigateToExpenses },
     ]);
   };
@@ -120,7 +128,7 @@ export default function ExpenseFormScreen({ onNavigateToExpenses }) {
           <Pressable style={styles.categoryMenu} onPress={(event) => event.stopPropagation()}>
             <Text style={styles.menuTitle}>Elegí una categoría</Text>
             <ScrollView>
-              {EXPENSE_CATEGORIES.map((option) => (
+              {CATEGORIES.map((option) => (
                 <TouchableOpacity
                   key={option.id}
                   style={styles.categoryOption}

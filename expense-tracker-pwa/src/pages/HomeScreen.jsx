@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { mockExpenses } from '../data/mockExpenses';
+import { useExpenses } from '../context/ExpensesContext';
 import ExpenseCard from '../components/ExpenseCard';
 
 export default function HomeScreen() {
-  const totalAmount = mockExpenses.reduce((sum, item) => sum + item.amount, 0);
+  const { expenses } = useExpenses();
+  const totalAmount = expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
   return (
     <div>
@@ -20,7 +21,7 @@ export default function HomeScreen() {
         <h2 style={{ margin: '0.25rem 0', color: '#1b5e20', fontSize: '1.75rem' }}>
           ${totalAmount.toLocaleString('es-AR')}
         </h2>
-        <span style={{ fontSize: '0.8rem', color: '#2e7d32' }}>{mockExpenses.length} gastos registrados</span>
+        <span style={{ fontSize: '0.8rem', color: '#2e7d32' }}>{expenses.length} gastos registrados</span>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -39,9 +40,13 @@ export default function HomeScreen() {
       </div>
 
       <div>
-        {mockExpenses.slice(0, 3).map((expense) => (
-          <ExpenseCard key={expense.id} expense={expense} />
-        ))}
+        {expenses.length === 0 ? (
+          <p style={{ color: '#6c757d', textAlign: 'center', padding: '1rem' }}>No hay gastos registrados aún.</p>
+        ) : (
+          expenses.slice(0, 3).map((expense) => (
+            <ExpenseCard key={expense.id} expense={expense} />
+          ))
+        )}
       </div>
     </div>
   );

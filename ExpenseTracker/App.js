@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
+  Alert,
   BackHandler,
   FlatList,
   Platform,
@@ -14,21 +15,16 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import WelcomeScreen from './src/Screens/WelcomeScreen';
 import ExpenseFormScreen from './src/Screens/ExpenseFormScreen';
-import { EXPENSE_CATEGORIES } from './src/Components/expenseCategories';
-
-const INITIAL_EXPENSES = [
-  { id: '1', description: 'Supermercado', amount: 25000, category: EXPENSE_CATEGORIES[0] },
-  { id: '2', description: 'Combustible', amount: 18000, category: EXPENSE_CATEGORIES[1] },
-  { id: '3', description: 'Internet', amount: 32000, category: EXPENSE_CATEGORIES[7] },
-];
+import { getCategory } from './src/data/categories';
+import { ExpensesProvider, useExpenses } from './src/context/ExpensesContext';
 
 function formatAmount(amount) {
-  return `$${amount.toLocaleString('es-AR')}`;
+  return `$${Number(amount).toLocaleString('es-AR')}`;
 }
 
-export default function App() {
+function ExpenseTrackerContent() {
   const [currentScreen, setCurrentScreen] = useState('welcome');
-  const expenses = INITIAL_EXPENSES;
+  const { expenses, removeExpense } = useExpenses();
 
   useEffect(() => {
     if (Platform.OS !== 'android' || currentScreen !== 'form') {
@@ -43,20 +39,48 @@ export default function App() {
     return () => backSubscription.remove();
   }, [currentScreen]);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.itemCard}>
-      <View style={styles.expenseDescription}>
-        <Text style={styles.description}>{item.description}</Text>
-        <View style={styles.categoryLabel}>
-          <Ionicons name={item.category.icon} size={15} color={item.category.color} />
-          <Text style={[styles.categoryText, { color: item.category.color }]}>{item.category.label}</Text>
+  const handleConfirmDelete = (id, title) => {
+    Alert.alert(
+      'Eliminar gasto',
+      `¿Estás seguro de que querés eliminar "${title}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Eliminar', style: 'destructive', onPress: () => removeExpense(id) },
+      ]
+    );
+  };
+
+  const renderItem = ({ item }) => {
+    const categoryInfo = getCategory(item.category);
+    const itemTitle = item.title || item.description || 'Sin título';
+
+    return (
+      <View style={styles.itemCard}>
+        <View style={styles.expenseDescription}>
+          <Text style={styles.description}>{itemTitle}</Text>
+          <View style={styles.categoryLabel}>
+            <Ionicons name={categoryInfo.icon} size={15} color={categoryInfo.color} />
+            <Text style={[styles.categoryText, { color: categoryInfo.color }]}>
+              {categoryInfo.label}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.amountContainer}>
+          <Text style={styles.amount}>{formatAmount(item.amount)}</Text>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleConfirmDelete(item.id, itemTitle)}
+            accessibilityRole="button"
+            accessibilityLabel={`Eliminar gasto ${itemTitle}`}
+          >
+            <Ionicons name="trash-outline" size={18} color="#dc3545" />
+          </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.amount}>{formatAmount(item.amount)}</Text>
-    </View>
-  );
+    );
+  };
 
-  const totalAmount = expenses.reduce((total, expense) => total + expense.amount, 0);
+  const totalAmount = expenses.reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -76,7 +100,7 @@ export default function App() {
           </TouchableOpacity>
           <FlatList
             data={expenses}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => String(item.id)}
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
             ListFooterComponent={(
@@ -89,6 +113,14 @@ export default function App() {
         </View>
       )}
     </SafeAreaView>
+  );
+}
+
+export default function App() {
+  return (
+    <ExpensesProvider>
+      <ExpenseTrackerContent />
+    </ExpensesProvider>
   );
 }
 
@@ -158,10 +190,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginLeft: 5,
   },
+  amountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   amount: {
     fontSize: 16,
     color: '#2b8a3e',
     fontWeight: 'bold',
+  },
+  deleteButton: {
+    marginLeft: 12,
+    padding: 4,
   },
   totalCard: {
     flexDirection: 'row',

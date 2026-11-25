@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { CATEGORIES } from '../data/categories';
 
 export default function NewExpenseModal({ isOpen, onClose, onSave }) {
   const dialogRef = useRef(null);
@@ -29,7 +30,7 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
         border: 'none',
         borderRadius: '12px',
         padding: '1.5rem',
-        maxWidth: '400px',
+        maxWidth: '420px',
         width: '90%',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
       }}
@@ -54,20 +55,22 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
         onSubmit={(e) => {
           e.preventDefault();
           const form = e.target;
-          const description = form.description.value;
+          const title = form.title.value;
           const amount = parseFloat(form.amount.value);
+          const category = form.category.value;
+          const notes = form.notes.value;
           if (onSave) {
-            onSave({ description, amount });
+            onSave({ title, amount, category, notes });
           }
           onClose();
         }}
       >
         <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            Descripción
+            Título del gasto
             <input
               type="text"
-              name="description"
+              name="title"
               required
               placeholder="Ej. Supermercado"
               style={{
@@ -82,15 +85,60 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
           </label>
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
             Monto ($)
             <input
               type="number"
               name="amount"
               inputMode="decimal"
+              step="any"
               required
               placeholder="0"
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                borderRadius: '6px',
+                border: '1px solid #ccc',
+                boxSizing: 'border-box',
+                marginTop: '0.25rem',
+              }}
+            />
+          </label>
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+            Categoría
+            <select
+              name="category"
+              defaultValue="Alimentación"
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                borderRadius: '6px',
+                border: '1px solid #ccc',
+                boxSizing: 'border-box',
+                marginTop: '0.25rem',
+                backgroundColor: '#fff',
+              }}
+            >
+              {CATEGORIES.map((cat) => (
+                <option key={cat.id} value={cat.label}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+            Notas (opcional)
+            <input
+              type="text"
+              name="notes"
+              placeholder="Ej. Compra semanal"
               style={{
                 width: '100%',
                 padding: '0.5rem',

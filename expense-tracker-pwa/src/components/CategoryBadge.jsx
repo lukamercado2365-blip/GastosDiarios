@@ -1,13 +1,17 @@
+import { getCategory } from '../data/categories';
+
 export default function CategoryBadge({ category }) {
   if (!category) return null;
+
+  const categoryInfo = getCategory(category);
 
   return (
     <span
       className="category-badge"
       style={{
-        backgroundColor: `${category.color}20`,
-        color: category.color,
-        border: `1px solid ${category.color}50`,
+        backgroundColor: `${categoryInfo.color}20`,
+        color: categoryInfo.color,
+        border: `1px solid ${categoryInfo.color}50`,
         padding: '2px 8px',
         borderRadius: '12px',
         fontSize: '0.75rem',
@@ -17,7 +21,7 @@ export default function CategoryBadge({ category }) {
         gap: '4px',
       }}
     >
-      {category.label}
+      {categoryInfo.label}
     </span>
   );
 }

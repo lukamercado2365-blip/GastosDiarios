@@ -5,8 +5,10 @@ function formatAmount(amount) {
   return `$${Number(amount).toLocaleString('es-AR')}`;
 }
 
-export default function ExpenseCard({ expense }) {
+export default function ExpenseCard({ expense, onDelete }) {
   if (!expense) return null;
+
+  const itemTitle = expense.title || expense.description || 'Sin título';
 
   return (
     <div
@@ -32,19 +34,42 @@ export default function ExpenseCard({ expense }) {
             fontSize: '1rem',
           }}
         >
-          {expense.description}
+          {itemTitle}
         </Link>
         <CategoryBadge category={expense.category} />
       </div>
-      <span
-        style={{
-          color: '#2b8a3e',
-          fontWeight: '700',
-          fontSize: '1.05rem',
-        }}
-      >
-        {formatAmount(expense.amount)}
-      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <span
+          style={{
+            color: '#2b8a3e',
+            fontWeight: '700',
+            fontSize: '1.05rem',
+          }}
+        >
+          {formatAmount(expense.amount)}
+        </span>
+        {onDelete && (
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm(`¿Estás seguro de que querés eliminar "${itemTitle}"?`)) {
+                onDelete(expense.id);
+              }
+            }}
+            aria-label={`Eliminar ${itemTitle}`}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#dc3545',
+              fontSize: '1rem',
+              padding: '4px',
+            }}
+          >
+            🗑️
+          </button>
+        )}
+      </div>
     </div>
   );
 }
