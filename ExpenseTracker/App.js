@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
+  ActivityIndicator,
   Alert,
   BackHandler,
   FlatList,
@@ -16,8 +17,10 @@ import { Ionicons } from '@expo/vector-icons';
 import WelcomeScreen from './src/Screens/WelcomeScreen';
 import ExpenseFormScreen from './src/Screens/ExpenseFormScreen';
 import ExpenseDetailScreen from './src/Screens/ExpenseDetailScreen';
+import SettingsScreen from './src/Screens/SettingsScreen';
 import { getCategory } from './src/data/categories';
 import { ExpensesProvider, useExpenses } from './src/context/ExpensesContext';
+import { SettingsProvider, useSettings } from './src/context/SettingsContext';
 
 function formatAmount(amount) {
   return `$${Number(amount).toLocaleString('es-AR')}`;
@@ -26,7 +29,9 @@ function formatAmount(amount) {
 function ExpenseTrackerContent() {
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [selectedExpenseId, setSelectedExpenseId] = useState(null);
-  const { expenses, removeExpense } = useExpenses();
+  const { expenses, isLoaded: isExpensesLoaded, removeExpense } = useExpenses();
+  const { isLoaded: isSettingsLoaded } = useSettings();
+  const isLoaded = isExpensesLoaded && isSettingsLoaded;
 
   useEffect(() => {
     if (Platform.OS !== 'android') {
@@ -34,7 +39,7 @@ function ExpenseTrackerContent() {
     }
 
     const backSubscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (currentScreen === 'form' || currentScreen === 'detail') {
+      if (currentScreen === 'form' || currentScreen === 'detail' || currentScreen === 'settings') {
         setCurrentScreen('expenses');
         return true;
       }
@@ -99,6 +104,17 @@ function ExpenseTrackerContent() {
 
   const totalAmount = expenses.reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
 
+  if (!isLoaded) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="dark" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2b8a3e" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
@@ -113,9 +129,21 @@ function ExpenseTrackerContent() {
           expenseId={selectedExpenseId}
           onNavigateBack={() => setCurrentScreen('expenses')}
         />
+      ) : currentScreen === 'settings' ? (
+        <SettingsScreen onNavigateBack={() => setCurrentScreen('expenses')} />
       ) : (
         <View style={styles.container}>
-          <Text style={styles.title}>Listado de Gastos</Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.title}>Listado de Gastos</Text>
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={() => setCurrentScreen('settings')}
+              accessibilityRole="button"
+              accessibilityLabel="Ir a Ajustes"
+            >
+              <Ionicons name="settings-outline" size={24} color="#333333" />
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity style={styles.addButton} onPress={() => setCurrentScreen('form')}>
             <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
             <Text style={styles.addButtonText}>Cargar gasto</Text>
@@ -150,7 +178,9 @@ function ExpenseTrackerContent() {
 export default function App() {
   return (
     <ExpensesProvider>
-      <ExpenseTrackerContent />
+      <SettingsProvider>
+        <ExpenseTrackerContent />
+      </SettingsProvider>
     </ExpensesProvider>
   );
 }
@@ -161,16 +191,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight : 0,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 16,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333333',
-    marginBottom: 16,
+  },
+  settingsButton: {
+    padding: 4,
   },
   addButton: {
     flexDirection: 'row',

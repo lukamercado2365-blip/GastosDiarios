@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 
 const ExpensesContext = createContext(null);
 
@@ -33,8 +35,64 @@ const INITIAL_EXPENSES_DATA = [
 ];
 
 export function ExpensesProvider({ children }) {
-  const [expenses, setExpenses] = useState(INITIAL_EXPENSES_DATA);
-  const [isLoaded] = useState(true);
+  const [expenses, setExpenses] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadExpenses = async () => {
+      try {
+        const savedExpenses = await AsyncStorage.getItem(STORAGE_KEYS.EXPENSES);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (savedExpenses === null) {
+          setExpenses(INITIAL_EXPENSES_DATA);
+        } else {
+          const parsedExpenses = JSON.parse(savedExpenses);
+          if (Array.isArray(parsedExpenses)) {
+            setExpenses(parsedExpenses);
+          } else {
+            setExpenses(INITIAL_EXPENSES_DATA);
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar los gastos desde AsyncStorage:', error);
+        if (isMounted) {
+          setExpenses(INITIAL_EXPENSES_DATA);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoaded(true);
+        }
+      }
+    };
+
+    loadExpenses();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+
+    const saveExpenses = async () => {
+      try {
+        await AsyncStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(expenses));
+      } catch (error) {
+        console.error('Error al guardar los gastos en AsyncStorage:', error);
+      }
+    };
+
+    saveExpenses();
+  }, [expenses, isLoaded]);
 
   const addExpense = (data) => {
     const title = data.title || data.description || 'Sin título';
