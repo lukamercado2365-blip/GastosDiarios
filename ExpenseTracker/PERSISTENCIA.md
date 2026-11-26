@@ -1,77 +1,13 @@
-# Persistencia local con AsyncStorage
+# Persistencia y sincronización
 
-## 1. Qué se persiste y con qué claves
+Los gastos se guardan en la colección `expenses` de Cloud Firestore. Tanto la PWA como React Native escuchan esa colección en tiempo real, ordenada por `createdAt` descendente. Las altas usan `serverTimestamp()` y las bajas eliminan el documento; los ajustes continúan en `localStorage` (PWA) y `AsyncStorage` (React Native).
 
-La aplicación persiste los datos del usuario en el almacenamiento local del dispositivo usando `@react-native-async-storage/async-storage`. Las claves están centralizadas en `src/constants/storageKeys.js`:
+## Configuración de Firebase
 
-| Dato persistido | Clave | Contexto responsable | Contenido |
-| --- | --- | --- | --- |
-| Lista de gastos | `@expensetracker/expenses` | `src/context/ExpensesContext.js` | Arreglo JSON con los gastos registrados (`id`, `title`, `description`, `amount`, `category`, `notes`, `createdAt`). |
-| Ajustes de la app | `@expensetracker/settings` | `src/context/SettingsContext.js` | Objeto JSON con `{ notifications, darkMode }`. |
+1. En Firebase Console crea un único proyecto, habilita Cloud Firestore en modo de prueba y registra una aplicación web llamada `expense-tracker-web`.
+2. Copia la configuración de esa misma app web a `expense-tracker-pwa/.env` y `ExpenseTracker/.env`, usando las claves respectivas que aparecen en los archivos `.env.example`.
+3. Instala las dependencias con `npm install` en la PWA y `npx expo install firebase` en `ExpenseTracker`.
+4. Para desarrollo, inicia cada aplicación desde su carpeta habitual. Al cambiar variables Expo, reinicia Metro.
+5. En Vercel o Netlify configura las seis variables `VITE_FIREBASE_*` como variables de entorno de compilación y vuelve a publicar la PWA.
 
-Todas las lecturas y escrituras usan `async/await` y están envueltas en bloques `try/catch` (registrando errores con `console.error`).
-
----
-
-## 2. Cómo funciona el patrón de hidratación
-
-Cuando la app arranca, `AsyncStorage` todavía no devolvió los datos guardados porque la lectura en disco es **asíncrona**. Para coordinar esa carga inicial sin sobrescribir datos ni mostrar estados inconsistentes, usamos el patrón de **hidratación con bandera `isLoaded`**:
-
-1. **Estado inicial mientras carga (`isLoaded = false`)**:
-   - `ExpensesProvider` arranca con `expenses = []` e `isLoaded = false`.
-   - `SettingsProvider` arranca con `{ notifications: true, darkMode: false }` e `isLoaded = false`.
-   - Mientras cualquiera de los dos contextos tenga `isLoaded === false`, `ExpenseTrackerContent` en `App.js` muestra un `ActivityIndicator` centrado en lugar del contenido principal.
-2. **Lectura al montar (`useEffect` con `[]`)**:
-   - Se ejecuta `await AsyncStorage.getItem(clave)`.
-   - En **gastos**, se distingue explícitamente:
-     - `null` (primera vez que se abre la app, no existe la clave): se carga `INITIAL_EXPENSES_DATA` para mantener los datos de ejemplo iniciales.
-     - Arreglo vacío `"[]"` (el usuario eliminó todos sus gastos): `JSON.parse("[]")` devuelve `[]`, que es un arreglo válido, por lo que **no** se vuelven a cargar los datos iniciales.
-     - Arreglo con gastos: se parsea con `JSON.parse` y se restaura en el estado.
-   - En **ajustes**, si existe un valor guardado, se parsea y se restauran `notifications` y `darkMode`.
-   - El bloque `finally` garantiza que `setIsLoaded(true)` se ejecute **siempre**, incluso si ocurre un error al leer o parsear JSON, evitando que la app quede bloqueada en la pantalla de carga.
-   - **Protección ante fallo de hidratación (`hydrationFailed`)**: si falla `AsyncStorage.getItem`, `JSON.parse` o el formato recuperado no es válido, se mantiene el fallback en memoria (`INITIAL_EXPENSES_DATA` en gastos o `DEFAULT_SETTINGS` en ajustes) y `isLoaded` pasa a `true` para que la app pueda usarse, pero se activa `hydrationFailed = true`. Esa bandera bloquea el efecto de guardado para no sobrescribir ni perder los datos que ya estaban en almacenamiento.
-3. **Guardado reactivo (`useEffect` con `[estado, isLoaded, hydrationFailed]`)**:
-   - Cada vez que cambia `expenses` o `settings`, el efecto de guardado verifica primero:
-     ```js
-     if (!isLoaded || hydrationFailed) {
-       return;
-     }
-     ```
-   - Recién cuando `isLoaded` es `true` y `hydrationFailed` es `false`, serializa con `JSON.stringify(...)` y guarda mediante `await AsyncStorage.setItem(...)`.
-
----
-
-## 3. El error más común: olvidar `isLoaded` en el efecto de guardado
-
-### Por qué ocurre
-En React, **todos los `useEffect` se ejecutan después del primer render**, incluso antes de que termine la promesa `AsyncStorage.getItem(...)` del efecto de hidratación. Si el efecto de guardado no verifica `if (!isLoaded) return;`, en el primer render toma el estado inicial vacío (`expenses = []`) y ejecuta `AsyncStorage.setItem('@expensetracker/expenses', '[]')`, pisando los datos reales del usuario antes de que terminen de leerse.
-
-### Prueba realizada (reproducción intencional del bug)
-Para comprobarlo en el código real:
-1. Se quitó temporalmente la condición `if (!isLoaded) { return; }` del efecto de guardado en `src/context/ExpensesContext.js`.
-2. Se montó `ExpensesProvider` con 2 gastos guardados previamente en `@expensetracker/expenses` (`"Café guardado"` y `"Libro guardado"`) y una latencia realista donde `setItem` responde antes que `getItem` (5 ms frente a 30 ms).
-3. **Qué pasó y qué se observó**:
-   - En el primer render (`expenses = []`), el efecto de guardado ejecutó `AsyncStorage.setItem('@expensetracker/expenses', '[]')` antes de que `getItem` terminara.
-   - Cuando `getItem` resolvió, leyó `"[]"` en lugar de los 2 gastos previos.
-   - El estado final quedó con `0` gastos (`isLoaded: true`) y el almacenamiento quedó sobrescrito con `[]`: **se perdieron todos los gastos**.
-4. Luego se restauró `if (!isLoaded) { return; }` y se verificó que los 2 gastos guardados se hidratan correctamente sin ninguna escritura prematura de `"[]"`.
-
----
-
-## 4. Cómo validar manualmente en Expo Go
-
-1. **Primer inicio (`null` en almacenamiento)**:
-   - Instalar/abrir la app por primera vez en Expo Go.
-   - Debe verse brevemente el `ActivityIndicator` y luego los 3 gastos iniciales (`Supermercado`, `Combustible`, `Internet`).
-2. **Persistencia de gastos al cerrar y reabrir**:
-   - Cargar un gasto nuevo desde `+ Cargar gasto` (y opcionalmente eliminar alguno existente).
-   - Cerrar completamente Expo Go desde el selector de aplicaciones recientes del teléfono y volver a abrir la app.
-   - Verificar que el gasto nuevo sigue en el listado y el eliminado no reaparece.
-3. **Lista vacía legítima (`[]`)**:
-   - Eliminar todos los gastos hasta ver la pantalla vacía (`"Todavía no registraste gastos"`).
-   - Cerrar completamente la app y volver a abrirla.
-   - Verificar que la lista sigue vacía y **no** vuelven a cargarse los 3 datos iniciales.
-4. **Persistencia de Ajustes (`@expensetracker/settings`)**:
-   - Tocar el ícono de engranaje en el encabezado de `Listado de Gastos` para abrir `Ajustes`.
-   - Cambiar los switches `Notificaciones` y `Modo oscuro`.
-   - Cerrar completamente la app y volver a abrirla; ingresar a `Ajustes` y comprobar que ambos switches conservan el valor elegido.
+La configuración de Firebase que se entrega al navegador y a la app móvil identifica el proyecto; no contiene una clave privada. Las reglas de Firestore controlan el acceso a los datos. El modo de prueba permite acceso temporal amplio: antes de usar datos reales, configura reglas adecuadas para tu aplicación.
