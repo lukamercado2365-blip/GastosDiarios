@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS = {
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hydrationFailed, setHydrationFailed] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -26,7 +27,7 @@ export function SettingsProvider({ children }) {
 
         if (savedSettings !== null) {
           const parsedSettings = JSON.parse(savedSettings);
-          if (parsedSettings && typeof parsedSettings === 'object') {
+          if (parsedSettings && typeof parsedSettings === 'object' && !Array.isArray(parsedSettings)) {
             setSettings({
               notifications:
                 typeof parsedSettings.notifications === 'boolean'
@@ -37,10 +38,16 @@ export function SettingsProvider({ children }) {
                   ? parsedSettings.darkMode
                   : DEFAULT_SETTINGS.darkMode,
             });
+          } else {
+            console.error('Los ajustes guardados en AsyncStorage no tienen formato de objeto.');
+            setHydrationFailed(true);
           }
         }
       } catch (error) {
         console.error('Error al cargar los ajustes desde AsyncStorage:', error);
+        if (isMounted) {
+          setHydrationFailed(true);
+        }
       } finally {
         if (isMounted) {
           setIsLoaded(true);
@@ -56,7 +63,7 @@ export function SettingsProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!isLoaded) {
+    if (!isLoaded || hydrationFailed) {
       return;
     }
 
@@ -69,7 +76,7 @@ export function SettingsProvider({ children }) {
     };
 
     saveSettings();
-  }, [settings, isLoaded]);
+  }, [settings, isLoaded, hydrationFailed]);
 
   const setNotifications = (value) => {
     setSettings((prev) => ({ ...prev, notifications: Boolean(value) }));

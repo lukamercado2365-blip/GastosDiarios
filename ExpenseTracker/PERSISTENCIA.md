@@ -29,14 +29,15 @@ Cuando la app arranca, `AsyncStorage` todavía no devolvió los datos guardados 
      - Arreglo con gastos: se parsea con `JSON.parse` y se restaura en el estado.
    - En **ajustes**, si existe un valor guardado, se parsea y se restauran `notifications` y `darkMode`.
    - El bloque `finally` garantiza que `setIsLoaded(true)` se ejecute **siempre**, incluso si ocurre un error al leer o parsear JSON, evitando que la app quede bloqueada en la pantalla de carga.
-3. **Guardado reactivo (`useEffect` con `[estado, isLoaded]`)**:
+   - **Protección ante fallo de hidratación (`hydrationFailed`)**: si falla `AsyncStorage.getItem`, `JSON.parse` o el formato recuperado no es válido, se mantiene el fallback en memoria (`INITIAL_EXPENSES_DATA` en gastos o `DEFAULT_SETTINGS` en ajustes) y `isLoaded` pasa a `true` para que la app pueda usarse, pero se activa `hydrationFailed = true`. Esa bandera bloquea el efecto de guardado para no sobrescribir ni perder los datos que ya estaban en almacenamiento.
+3. **Guardado reactivo (`useEffect` con `[estado, isLoaded, hydrationFailed]`)**:
    - Cada vez que cambia `expenses` o `settings`, el efecto de guardado verifica primero:
      ```js
-     if (!isLoaded) {
+     if (!isLoaded || hydrationFailed) {
        return;
      }
      ```
-   - Recién cuando `isLoaded` es `true`, serializa con `JSON.stringify(...)` y guarda mediante `await AsyncStorage.setItem(...)`.
+   - Recién cuando `isLoaded` es `true` y `hydrationFailed` es `false`, serializa con `JSON.stringify(...)` y guarda mediante `await AsyncStorage.setItem(...)`.
 
 ---
 

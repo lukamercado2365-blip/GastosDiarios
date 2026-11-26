@@ -37,6 +37,7 @@ const INITIAL_EXPENSES_DATA = [
 export function ExpensesProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hydrationFailed, setHydrationFailed] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -56,12 +57,15 @@ export function ExpensesProvider({ children }) {
           if (Array.isArray(parsedExpenses)) {
             setExpenses(parsedExpenses);
           } else {
+            console.error('Los gastos guardados en AsyncStorage no tienen formato de arreglo.');
+            setHydrationFailed(true);
             setExpenses(INITIAL_EXPENSES_DATA);
           }
         }
       } catch (error) {
         console.error('Error al cargar los gastos desde AsyncStorage:', error);
         if (isMounted) {
+          setHydrationFailed(true);
           setExpenses(INITIAL_EXPENSES_DATA);
         }
       } finally {
@@ -79,7 +83,7 @@ export function ExpensesProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!isLoaded) {
+    if (!isLoaded || hydrationFailed) {
       return;
     }
 
@@ -92,7 +96,7 @@ export function ExpensesProvider({ children }) {
     };
 
     saveExpenses();
-  }, [expenses, isLoaded]);
+  }, [expenses, isLoaded, hydrationFailed]);
 
   const addExpense = (data) => {
     const title = data.title || data.description || 'Sin título';
