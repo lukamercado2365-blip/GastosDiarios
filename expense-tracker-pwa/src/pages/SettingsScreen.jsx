@@ -1,8 +1,10 @@
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { useSettings } from '../context/SettingsContext';
 import InstallBanner from '../components/InstallBanner';
 
 export default function SettingsScreen() {
   const { isInstallable, isInstalled, isIOS, promptInstall } = usePWAInstall();
+  const { settings, setNotifications } = useSettings();
 
   return (
     <div>
@@ -44,7 +46,13 @@ export default function SettingsScreen() {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Notificaciones de gastos</span>
-          <input type="checkbox" role="switch" defaultChecked style={{ cursor: 'pointer' }} />
+          <input
+            type="checkbox"
+            role="switch"
+            checked={settings.notifications}
+            onChange={(e) => setNotifications(e.target.checked)}
+            style={{ cursor: 'pointer' }}
+          />
         </div>
       </div>
     </div>

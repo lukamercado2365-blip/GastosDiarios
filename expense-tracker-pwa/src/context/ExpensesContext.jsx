@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 
 const ExpensesContext = createContext(null);
 
@@ -32,9 +33,45 @@ const INITIAL_EXPENSES_DATA = [
   },
 ];
 
+/**
+ * Lee los gastos desde localStorage de forma síncrona.
+ * - null: devuelve los datos iniciales de ejemplo.
+ * - Arreglo JSON válido (incluso []): respeta la lista guardada.
+ * - JSON dañado o formato inesperado: devuelve [] para no romper la app.
+ */
+function readExpenses(storage) {
+  try {
+    const targetStorage = storage ?? globalThis.localStorage;
+    const savedExpenses = targetStorage.getItem(STORAGE_KEYS.EXPENSES);
+
+    if (savedExpenses === null) {
+      return INITIAL_EXPENSES_DATA;
+    }
+
+    const parsedExpenses = JSON.parse(savedExpenses);
+    if (Array.isArray(parsedExpenses)) {
+      return parsedExpenses;
+    }
+
+    console.error('Los gastos guardados en localStorage no tienen formato de arreglo.');
+    return [];
+  } catch (error) {
+    console.error('Error al leer los gastos desde localStorage:', error);
+    return [];
+  }
+}
+
 export function ExpensesProvider({ children }) {
-  const [expenses, setExpenses] = useState(INITIAL_EXPENSES_DATA);
+  const [expenses, setExpenses] = useState(() => readExpenses());
   const [isLoaded] = useState(true);
+
+  useEffect(() => {
+    try {
+      globalThis.localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(expenses));
+    } catch (error) {
+      console.error('Error al guardar los gastos en localStorage:', error);
+    }
+  }, [expenses]);
 
   const addExpense = (data) => {
     const title = data.title || data.description || 'Sin título';
