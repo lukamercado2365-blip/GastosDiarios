@@ -552,3 +552,14 @@ a.expense-card {
 .btn-modal-save:hover {
   background-color: var(--color-primary-dark);
 }
+
+/* === Banner indicador de conexión (Bonus 3 - #per-s3-us7) === */
+.offline-banner {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-bottom: 1px solid #f59e0b;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}

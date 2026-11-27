@@ -5,7 +5,7 @@ function formatAmount(amount) {
   return `$${Number(amount).toLocaleString('es-AR')}`;
 }
 
-export default function ExpenseCard({ expense, onDelete }) {
+export default function ExpenseCard({ expense, onDelete, onEdit }) {
   if (!expense) return null;
 
   const itemTitle = expense.title || expense.description || 'Sin título';
@@ -76,6 +76,27 @@ export default function ExpenseCard({ expense, onDelete }) {
         >
           {formatAmount(expense.amount)}
         </span>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onEdit(expense);
+            }}
+            aria-label={`Editar ${itemTitle}`}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#2b8a3e',
+              fontSize: '1rem',
+              padding: '4px',
+            }}
+          >
+            ✏️
+          </button>
+        )}
         {onDelete && (
           <button
             type="button"

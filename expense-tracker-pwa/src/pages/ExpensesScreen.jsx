@@ -4,17 +4,40 @@ import ExpenseCard from '../components/ExpenseCard';
 import NewExpenseModal from '../components/NewExpenseModal';
 
 export default function ExpensesScreen() {
-  const { expenses, addExpense, removeExpense } = useExpenses();
+  const { expenses, addExpense, updateExpense, removeExpense } = useExpenses();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
 
   const totalAmount = expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+  const handleOpenCreate = () => {
+    setEditingExpense(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (expense) => {
+    setEditingExpense(expense);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingExpense(null);
+  };
+
+  const handleSaveModal = (data) => {
+    if (editingExpense) {
+      return updateExpense(editingExpense.id, data);
+    }
+    return addExpense(data);
+  };
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#333' }}>Listado de Gastos</h2>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenCreate}
           className="btn-primary tap-feedback"
           style={{ padding: '0.5rem 0.85rem', fontSize: '0.9rem' }}
         >
@@ -46,6 +69,7 @@ export default function ExpensesScreen() {
             <li key={expense.id}>
               <ExpenseCard
                 expense={expense}
+                onEdit={handleOpenEdit}
                 onDelete={removeExpense}
               />
             </li>
@@ -72,8 +96,9 @@ export default function ExpensesScreen() {
 
       <NewExpenseModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={addExpense}
+        onClose={handleCloseModal}
+        onSave={handleSaveModal}
+        initialExpense={editingExpense}
       />
     </div>
   );

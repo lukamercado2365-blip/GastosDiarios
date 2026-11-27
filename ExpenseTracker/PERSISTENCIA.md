@@ -85,3 +85,31 @@ La diferencia en la Prueba 3 ocurre por el **motor de caché que utiliza el SDK 
 ### Video o GIF de sincronización en tiempo real
 - **Archivo:** `docs/evidencias/sincronizacion-tiempo-real.gif` (o `.mp4`)
 - **Contenido esperado:** ambas aplicaciones abiertas en simultáneo (teléfono con Expo Go junto a la ventana del navegador con la PWA), creando un gasto en una de ellas y mostrando cómo aparece en tiempo real en la otra.
+
+---
+
+## 6. Bonus 3 (`#per-s3-us7`): Edición en tiempo real, Indicador Offline y Auth Anónima
+
+### 6.1. Edición de gastos con `updateDoc()`
+- Tanto en **React Native** (`ExpenseFormScreen.js` reutilizado desde `ExpenseDetailScreen.js`) como en la **PWA** (`NewExpenseModal.jsx` reutilizado desde `ExpensesScreen.jsx` y `ExpenseDetailScreen.jsx`), se incorporó el modo edición mediante la prop `initialExpense`.
+- Al guardar cambios, `ExpensesContext` ejecuta `updateDoc(doc(db, 'users', uid, 'expenses', id), ...)` en Firestore; como ambas apps escuchan en tiempo real con `onSnapshot`, la actualización se refleja automáticamente sin recargar.
+
+### 6.2. Indicador de conexión (`Sin conexión`)
+- **React Native (`App.js`):** se suscribe a `@react-native-community/netinfo` (`NetInfo.addEventListener`) y muestra un banner superior `"Sin conexión"` cuando `isConnected === false || isInternetReachable === false`.
+- **PWA (`MainLayout.jsx`):** lee `navigator.onLine` y escucha los eventos globales `online` y `offline` de `window`, mostrando el banner `"⚠️ Sin conexión"` cuando se pierde red.
+
+### 6.3. Firebase Authentication anónima y reglas de seguridad (`users/{uid}/expenses`)
+- Ambas aplicaciones inician sesión automáticamente con `signInAnonymously(auth)` al arrancar cuando no hay sesión activa (`onAuthStateChanged`).
+- En **React Native** (`src/services/firebase.js`), la sesión se persiste entre reinicios usando:
+  ```js
+  initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+  ```
+- Los documentos pasan a guardarse en la subcolección privada `users/{uid}/expenses` y las reglas en `firestore.rules` restringen la lectura y escritura únicamente al propietario (`request.auth != null && request.auth.uid == userId`).
+
+### 6.4. Por qué con usuarios anónimos ya no se comparten gastos y cómo resolverlo
+- **Motivo:** `signInAnonymously()` genera un `uid` aleatorio distinto por cada instancia/dispositivo (uno en Expo Go del teléfono y otro distinto en el navegador de la PWA). Al guardar bajo `users/{uid}/expenses`, React Native consulta `users/<uid_movil>/expenses` y la PWA consulta `users/<uid_web>/expenses`, por lo que cada app ve únicamente sus propios gastos y deja de sincronizar con la otra.
+- **Cómo resolverlo para volver a compartir gastos entre ambos dispositivos de forma segura:**
+  1. **Autenticación con cuenta real y vinculación (`linkWithCredential`):** permitir al usuario iniciar sesión con Email/Contraseña o Google en ambas apps (vinculando el usuario anónimo previo con `linkWithCredential` para no perder los gastos ya cargados). Al iniciar sesión con la misma cuenta en teléfono y web, ambos obtienen exactamente el **mismo `uid`** y vuelven a leer/escribir la misma ruta `users/{uid}/expenses`.
+  2. **Alternativa colaborativa (espacios compartidos):** guardar los gastos en `workspaces/{workspaceId}/expenses` incluyendo un arreglo `memberUids` en el documento padre del espacio, y validar en las reglas de Firestore `request.auth.uid in get(...).data.memberUids` para que múltiples usuarios puedan compartir un mismo presupuesto.

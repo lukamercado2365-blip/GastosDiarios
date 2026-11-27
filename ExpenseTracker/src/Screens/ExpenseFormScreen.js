@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,16 +14,43 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { CATEGORIES } from '../data/categories';
+import { CATEGORIES, getCategory } from '../data/categories';
 import { useExpenses } from '../context/ExpensesContext';
 
-export default function ExpenseFormScreen({ onNavigateToExpenses }) {
-  const { addExpense } = useExpenses();
-  const [nombre, setNombre] = useState('');
-  const [monto, setMonto] = useState('');
-  const [categoria, setCategoria] = useState(null);
-  const [notes, setNotes] = useState('');
+export default function ExpenseFormScreen({ onNavigateToExpenses, initialExpense = null }) {
+  const { addExpense, updateExpense } = useExpenses();
+  const isEditing = Boolean(initialExpense);
+  const [nombre, setNombre] = useState(
+    initialExpense ? (initialExpense.title || initialExpense.description || '') : ''
+  );
+  const [monto, setMonto] = useState(
+    initialExpense && initialExpense.amount !== undefined && initialExpense.amount !== null
+      ? String(initialExpense.amount)
+      : ''
+  );
+  const [categoria, setCategoria] = useState(
+    initialExpense?.category ? getCategory(initialExpense.category) : null
+  );
+  const [notes, setNotes] = useState(initialExpense?.notes || '');
   const [categoryMenuVisible, setCategoryMenuVisible] = useState(false);
+
+  useEffect(() => {
+    if (initialExpense) {
+      setNombre(initialExpense.title || initialExpense.description || '');
+      setMonto(
+        initialExpense.amount !== undefined && initialExpense.amount !== null
+          ? String(initialExpense.amount)
+          : ''
+      );
+      setCategoria(initialExpense.category ? getCategory(initialExpense.category) : null);
+      setNotes(initialExpense.notes || '');
+    } else {
+      setNombre('');
+      setMonto('');
+      setCategoria(null);
+      setNotes('');
+    }
+  }, [initialExpense]);
 
   const parsedAmount = Number(monto.replace(',', '.'));
   const isValid = nombre.trim().length > 0 && Number.isFinite(parsedAmount) && parsedAmount > 0 && categoria !== null;
@@ -34,14 +61,24 @@ export default function ExpenseFormScreen({ onNavigateToExpenses }) {
       return;
     }
 
-    // El monto se guarda como número y el formulario llama a addExpense()
-    addExpense({
+    const payload = {
       title: nombre.trim(),
       description: nombre.trim(),
       amount: parsedAmount,
       category: categoria.label,
       notes: notes.trim(),
-    });
+    };
+
+    if (isEditing) {
+      updateExpense(initialExpense.id, payload);
+      Alert.alert('Gasto actualizado', '¡Los cambios se guardaron con éxito!', [
+        { text: 'Aceptar', onPress: onNavigateToExpenses },
+      ]);
+      return;
+    }
+
+    // El monto se guarda como número y el formulario llama a addExpense()
+    addExpense(payload);
 
     setNombre('');
     setMonto('');
@@ -71,7 +108,7 @@ export default function ExpenseFormScreen({ onNavigateToExpenses }) {
               <Text style={styles.backButtonText}>Volver al listado</Text>
             </TouchableOpacity>
 
-            <Text style={styles.title}>Cargar Gasto</Text>
+            <Text style={styles.title}>{isEditing ? 'Editar Gasto' : 'Cargar Gasto'}</Text>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Nombre del gasto</Text>
@@ -136,7 +173,7 @@ export default function ExpenseFormScreen({ onNavigateToExpenses }) {
               activeOpacity={0.8}
               disabled={!isValid}
             >
-              <Text style={styles.buttonText}>Guardar</Text>
+              <Text style={styles.buttonText}>{isEditing ? 'Guardar cambios' : 'Guardar'}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

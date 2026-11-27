@@ -31,7 +31,7 @@ function formatDate(dateString) {
   return dateString;
 }
 
-export default function ExpenseDetailScreen({ expenseId, onNavigateBack }) {
+export default function ExpenseDetailScreen({ expenseId, onNavigateBack, onEditExpense }) {
   const { expenses, removeExpense } = useExpenses();
 
   // El detalle recibe solo el id por parámetro y busca el gasto en el Context
@@ -92,15 +92,29 @@ export default function ExpenseDetailScreen({ expenseId, onNavigateBack }) {
               <Text style={styles.backButtonText}>Volver</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={handleDelete}
-              accessibilityRole="button"
-              accessibilityLabel="Eliminar gasto"
-            >
-              <Ionicons name="trash-outline" size={20} color="#dc3545" />
-              <Text style={styles.deleteButtonText}>Eliminar</Text>
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              {onEditExpense && (
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => onEditExpense(expense)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Editar gasto"
+                >
+                  <Ionicons name="create-outline" size={20} color="#2b8a3e" />
+                  <Text style={styles.editButtonText}>Editar</Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={handleDelete}
+                accessibilityRole="button"
+                accessibilityLabel="Eliminar gasto"
+              >
+                <Ionicons name="trash-outline" size={20} color="#dc3545" />
+                <Text style={styles.deleteButtonText}>Eliminar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.section}>
@@ -188,6 +202,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 6,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editButtonText: {
+    color: '#2b8a3e',
+    fontSize: 15,
+    fontWeight: '600',
+    marginLeft: 4,
   },
   deleteButton: {
     flexDirection: 'row',

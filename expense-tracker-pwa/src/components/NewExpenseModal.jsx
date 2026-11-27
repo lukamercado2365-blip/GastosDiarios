@@ -1,34 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CATEGORIES } from '../data/categories';
+import { CATEGORIES, getCategory } from '../data/categories';
 
-export default function NewExpenseModal({ isOpen, onClose, onSave }) {
-  const dialogRef = useRef(null);
-  const [nombre, setNombre] = useState('');
-  const [monto, setMonto] = useState('');
-  const [notes, setNotes] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (isOpen) {
-      if (!dialog.open) {
-        dialog.showModal();
-      }
-    } else {
-      if (dialog.open) {
-        dialog.close();
-      }
-    }
-  }, [isOpen]);
-
-  const handleDialogClick = (e) => {
-    if (e.target === dialogRef.current) {
-      onClose();
-    }
-  };
+function NewExpenseForm({ initialExpense, onClose, onSave }) {
+  const isEditing = Boolean(initialExpense);
+  const [nombre, setNombre] = useState(
+    initialExpense ? (initialExpense.title || initialExpense.description || '') : ''
+  );
+  const [monto, setMonto] = useState(
+    initialExpense && initialExpense.amount !== undefined && initialExpense.amount !== null
+      ? String(initialExpense.amount)
+      : ''
+  );
+  const [notes, setNotes] = useState(initialExpense?.notes || '');
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialExpense?.category ? getCategory(initialExpense.category) : CATEGORIES[0]
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -47,24 +34,13 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
       });
     }
 
-    setNombre('');
-    setMonto('');
-    setNotes('');
-    setSelectedCategory(CATEGORIES[0]);
     onClose();
   };
 
-  if (!isOpen) return null;
-
-  return createPortal(
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      onClick={handleDialogClick}
-      className="bottom-sheet-dialog"
-    >
+  return (
+    <>
       <header className="modal-header">
-        <h3 className="modal-title">Cargar Gasto</h3>
+        <h3 className="modal-title">{isEditing ? 'Editar Gasto' : 'Cargar Gasto'}</h3>
         <button
           type="button"
           onClick={onClose}
@@ -172,10 +148,53 @@ export default function NewExpenseModal({ isOpen, onClose, onSave }) {
             className="btn-primary tap-feedback"
             style={{ padding: '0.5rem 1rem', fontSize: '0.95rem' }}
           >
-            Guardar
+            {isEditing ? 'Guardar cambios' : 'Guardar'}
           </button>
         </div>
       </form>
+    </>
+  );
+}
+
+export default function NewExpenseModal({ isOpen, onClose, onSave, initialExpense = null }) {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (isOpen) {
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+    } else {
+      if (dialog.open) {
+        dialog.close();
+      }
+    }
+  }, [isOpen]);
+
+  const handleDialogClick = (e) => {
+    if (e.target === dialogRef.current) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      onClick={handleDialogClick}
+      className="bottom-sheet-dialog"
+    >
+      <NewExpenseForm
+        key={initialExpense ? `edit-${initialExpense.id}` : 'create'}
+        initialExpense={initialExpense}
+        onClose={onClose}
+        onSave={onSave}
+      />
     </dialog>,
     document.body
   );

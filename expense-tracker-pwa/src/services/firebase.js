@@ -1,4 +1,5 @@
 import { getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import {
   getFirestore,
   initializeFirestore,
@@ -40,4 +41,5 @@ function createFirestoreInstance(firebaseApp) {
   }
 }
 
+export const auth = app ? getAuth(app) : null;
 export const db = createFirestoreInstance(app);
