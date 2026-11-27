@@ -84,6 +84,12 @@ function ExpenseTrackerContent() {
               {categoryInfo.label}
             </Text>
           </View>
+          {item.hasPendingWrites && (
+            <View style={styles.pendingRow}>
+              <Ionicons name="cloud-upload-outline" size={14} color="#d97706" />
+              <Text style={styles.pendingText}>Pendiente de sincronizar</Text>
+            </View>
+          )}
         </TouchableOpacity>
         <View style={styles.amountContainer}>
           <TouchableOpacity onPress={() => handleOpenDetail(item.id)}>
@@ -263,6 +269,17 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 13,
     marginLeft: 5,
+  },
+  pendingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  pendingText: {
+    fontSize: 12,
+    color: '#d97706',
+    fontWeight: '600',
+    marginLeft: 4,
   },
   amountContainer: {
     flexDirection: 'row',

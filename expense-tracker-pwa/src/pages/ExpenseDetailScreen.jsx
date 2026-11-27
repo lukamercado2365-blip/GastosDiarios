@@ -218,6 +218,22 @@ export default function ExpenseDetailScreen() {
             {expense.notes || 'Sin notas'}
           </div>
         </div>
+
+        {expense.hasPendingWrites && (
+          <div
+            style={{
+              backgroundColor: '#fef3c7',
+              border: '1px solid #f59e0b',
+              borderRadius: '8px',
+              padding: '0.75rem 1rem',
+              color: '#92400e',
+              fontSize: '0.88rem',
+              fontWeight: '600',
+            }}
+          >
+            ⏳ Pendiente de sincronizar (en Sync Queue local)
+          </div>
+        )}
       </div>
     </div>
   );
