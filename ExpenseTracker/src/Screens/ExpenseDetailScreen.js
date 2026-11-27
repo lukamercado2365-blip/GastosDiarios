@@ -136,6 +136,14 @@ export default function ExpenseDetailScreen({ expenseId, onNavigateBack }) {
               </Text>
             </View>
           </View>
+
+          {expense.hasPendingWrites && (
+            <View style={styles.pendingBanner}>
+              <Text style={styles.pendingBannerText}>
+                ⏳ Pendiente de sincronizar (en Sync Queue local)
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -248,6 +256,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8c959f',
     fontStyle: 'italic',
+  },
+  pendingBanner: {
+    backgroundColor: '#fef3c7',
+    borderColor: '#f59e0b',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginTop: 4,
+  },
+  pendingBannerText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#92400e',
   },
   notFoundTitle: {
     fontSize: 20,

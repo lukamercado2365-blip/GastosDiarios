@@ -48,6 +48,22 @@ export default function ExpenseCard({ expense, onDelete }) {
           {itemTitle}
         </span>
         <CategoryBadge category={expense.category} />
+        {expense.hasPendingWrites && (
+          <span
+            style={{
+              fontSize: '0.75rem',
+              color: '#b45309',
+              backgroundColor: '#fef3c7',
+              border: '1px solid #f59e0b',
+              borderRadius: '10px',
+              padding: '2px 8px',
+              fontWeight: '600',
+              marginTop: '2px',
+            }}
+          >
+            ⏳ Pendiente de sincronizar
+          </span>
+        )}
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <span
