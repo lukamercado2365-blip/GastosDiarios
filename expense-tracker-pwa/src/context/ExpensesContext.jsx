@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import {
   addDoc,
   collection,
@@ -8,9 +9,10 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { STORAGE_KEYS } from '../constants/storageKeys';
-import { db, isFirebaseConfigured } from '../services/firebase';
+import { auth, db, isFirebaseConfigured } from '../services/firebase';
 
 const ExpensesContext = createContext(null);
 
@@ -44,6 +46,29 @@ const INITIAL_EXPENSES_DATA = [
   },
 ];
 
+function getExpensesCollection(uid) {
+  return uid ? collection(db, 'users', uid, 'expenses') : collection(db, 'expenses');
+}
+
+function getExpenseDoc(uid, id) {
+  return uid ? doc(db, 'users', uid, 'expenses', id) : doc(db, 'expenses', id);
+}
+
+function normalizeExpensePayload(data) {
+  const title = data.title || data.description || 'Sin título';
+  const categoryName = typeof data.category === 'object' && data.category !== null
+    ? data.category.label
+    : (data.category || 'Otros');
+
+  return {
+    title,
+    description: title,
+    amount: Number(data.amount) || 0,
+    category: categoryName,
+    notes: data.notes || '',
+  };
+}
+
 /**
  * Lee los gastos desde localStorage de forma síncrona (respaldo cuando Firebase no está configurado).
  * - null: devuelve los datos iniciales de ejemplo.
@@ -75,13 +100,33 @@ function readExpenses(storage) {
 export function ExpensesProvider({ children }) {
   const [expenses, setExpenses] = useState(() => (isFirebaseConfigured ? [] : readExpenses()));
   const [isLoaded, setIsLoaded] = useState(() => !isFirebaseConfigured);
+  const [userId, setUserId] = useState(null);
+  const [authReady, setAuthReady] = useState(() => !isFirebaseConfigured);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
+    if (!isFirebaseConfigured || !auth) {
       return undefined;
     }
 
-    const expensesQuery = query(collection(db, 'expenses'), orderBy('createdAt', 'desc'));
+    return onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+        setAuthReady(true);
+      } else {
+        signInAnonymously(auth).catch((error) => {
+          console.error('Error al iniciar sesión anónima en Firebase Auth:', error);
+          setAuthReady(true);
+        });
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!authReady || !isFirebaseConfigured || !db) {
+      return undefined;
+    }
+
+    const expensesQuery = query(getExpensesCollection(userId), orderBy('createdAt', 'desc'));
     return onSnapshot(
       expensesQuery,
       { includeMetadataChanges: true },
@@ -102,7 +147,7 @@ export function ExpensesProvider({ children }) {
         setIsLoaded(true);
       }
     );
-  }, []);
+  }, [authReady, userId]);
 
   useEffect(() => {
     if (isFirebaseConfigured) {
@@ -117,29 +162,18 @@ export function ExpensesProvider({ children }) {
   }, [expenses]);
 
   const addExpense = (data) => {
-    const title = data.title || data.description || 'Sin título';
-    const categoryName = typeof data.category === 'object' && data.category !== null
-      ? data.category.label
-      : (data.category || 'Otros');
+    const payload = normalizeExpensePayload(data);
 
     if (isFirebaseConfigured && db) {
-      return addDoc(collection(db, 'expenses'), {
-        title,
-        description: title,
-        amount: Number(data.amount) || 0,
-        category: categoryName,
-        notes: data.notes || '',
+      return addDoc(getExpensesCollection(userId), {
+        ...payload,
         createdAt: serverTimestamp(),
       });
     }
 
     const newExpense = {
       id: data.id || Math.random().toString(36).substring(2, 9),
-      title,
-      description: title,
-      amount: Number(data.amount) || 0,
-      category: categoryName,
-      notes: data.notes || '',
+      ...payload,
       createdAt: data.createdAt || new Date().toISOString(),
       hasPendingWrites: false,
     };
@@ -148,9 +182,22 @@ export function ExpensesProvider({ children }) {
     return newExpense;
   };
 
+  const updateExpense = (id, data) => {
+    const payload = normalizeExpensePayload(data);
+
+    if (isFirebaseConfigured && db) {
+      return updateDoc(getExpenseDoc(userId, id), payload);
+    }
+
+    setExpenses((prev) =>
+      prev.map((item) => (String(item.id) === String(id) ? { ...item, ...payload } : item))
+    );
+    return Promise.resolve();
+  };
+
   const removeExpense = (id) => {
     if (isFirebaseConfigured && db) {
-      return deleteDoc(doc(db, 'expenses', id));
+      return deleteDoc(getExpenseDoc(userId, id));
     }
 
     setExpenses((prev) => prev.filter((item) => item.id !== id));
@@ -162,7 +209,9 @@ export function ExpensesProvider({ children }) {
       value={{
         expenses,
         isLoaded,
+        userId,
         addExpense,
+        updateExpense,
         removeExpense,
       }}
     >

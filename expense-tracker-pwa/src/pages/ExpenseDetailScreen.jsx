@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useExpenses } from '../context/ExpensesContext';
 import CategoryBadge from '../components/CategoryBadge';
+import NewExpenseModal from '../components/NewExpenseModal';
 
 function formatDate(dateString) {
   if (!dateString) return 'Sin fecha';
@@ -20,7 +22,8 @@ function formatDate(dateString) {
 export default function ExpenseDetailScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { expenses, removeExpense } = useExpenses();
+  const { expenses, updateExpense, removeExpense } = useExpenses();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const expense = expenses.find((item) => String(item.id) === String(id));
 
@@ -97,21 +100,40 @@ export default function ExpenseDetailScreen() {
         >
           ← Volver
         </button>
-        <button
-          onClick={handleDelete}
-          className="tap-feedback"
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#dc3545',
-            fontSize: '0.9rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            padding: 0,
-          }}
-        >
-          🗑️ Eliminar
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(true)}
+            className="tap-feedback"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#2b8a3e',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            ✏️ Editar
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="tap-feedback"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#dc3545',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            🗑️ Eliminar
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -235,6 +257,13 @@ export default function ExpenseDetailScreen() {
           </div>
         )}
       </div>
+
+      <NewExpenseModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        initialExpense={expense}
+        onSave={(data) => updateExpense(expense.id, data)}
+      />
     </div>
   );
 }

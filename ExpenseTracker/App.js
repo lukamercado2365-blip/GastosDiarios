@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import NetInfo from '@react-native-community/netinfo';
 import WelcomeScreen from './src/Screens/WelcomeScreen';
 import ExpenseFormScreen from './src/Screens/ExpenseFormScreen';
 import ExpenseDetailScreen from './src/Screens/ExpenseDetailScreen';
@@ -29,9 +30,18 @@ function formatAmount(amount) {
 function ExpenseTrackerContent() {
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [selectedExpenseId, setSelectedExpenseId] = useState(null);
+  const [editingExpense, setEditingExpense] = useState(null);
+  const [isOffline, setIsOffline] = useState(false);
   const { expenses, isLoaded: isExpensesLoaded, removeExpense } = useExpenses();
   const { isLoaded: isSettingsLoaded } = useSettings();
   const isLoaded = isExpensesLoaded && isSettingsLoaded;
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOffline(state.isConnected === false || state.isInternetReachable === false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (Platform.OS !== 'android') {
@@ -40,6 +50,7 @@ function ExpenseTrackerContent() {
 
     const backSubscription = BackHandler.addEventListener('hardwareBackPress', () => {
       if (currentScreen === 'form' || currentScreen === 'detail' || currentScreen === 'settings') {
+        setEditingExpense(null);
         setCurrentScreen('expenses');
         return true;
       }
@@ -124,16 +135,30 @@ function ExpenseTrackerContent() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
+      {isOffline && (
+        <View style={styles.offlineBanner} accessibilityLiveRegion="polite">
+          <Ionicons name="cloud-offline-outline" size={16} color="#92400e" />
+          <Text style={styles.offlineBannerText}>Sin conexión</Text>
+        </View>
+      )}
       {currentScreen === 'welcome' ? (
         <WelcomeScreen onNavigateToExpenses={() => setCurrentScreen('expenses')} />
       ) : currentScreen === 'form' ? (
         <ExpenseFormScreen
-          onNavigateToExpenses={() => setCurrentScreen('expenses')}
+          initialExpense={editingExpense}
+          onNavigateToExpenses={() => {
+            setEditingExpense(null);
+            setCurrentScreen('expenses');
+          }}
         />
       ) : currentScreen === 'detail' ? (
         <ExpenseDetailScreen
           expenseId={selectedExpenseId}
           onNavigateBack={() => setCurrentScreen('expenses')}
+          onEditExpense={(expenseToEdit) => {
+            setEditingExpense(expenseToEdit);
+            setCurrentScreen('form');
+          }}
         />
       ) : currentScreen === 'settings' ? (
         <SettingsScreen onNavigateBack={() => setCurrentScreen('expenses')} />
@@ -150,7 +175,13 @@ function ExpenseTrackerContent() {
               <Ionicons name="settings-outline" size={24} color="#333333" />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={() => setCurrentScreen('form')}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              setEditingExpense(null);
+              setCurrentScreen('form');
+            }}
+          >
             <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
             <Text style={styles.addButtonText}>Cargar gasto</Text>
           </TouchableOpacity>
@@ -201,6 +232,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  offlineBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fef3c7',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f59e0b',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  offlineBannerText: {
+    color: '#92400e',
+    fontSize: 13,
+    fontWeight: '700',
   },
   container: {
     flex: 1,
